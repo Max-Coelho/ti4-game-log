@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TI4 Game — Log</title>
+  <style>
+    :root { --bg:#0b0f14; --panel:#0f1720; --panel2:#0c131c; --text:#e6edf3; --muted:#93a0ad; --border:#1e2937; --accent:#60a5fa; --ok:#10b981; --danger:#ef4444;}
+    *{box-sizing:border-box} html,body{margin:0;height:100%;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial}
+    body{background:linear-gradient(180deg,#0a0f14 0%,#0b1016 100%);color:var(--text)}
+    .wrap{max-width:900px;margin:0 auto;padding:24px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:16px;padding:20px;margin:12px 0;box-shadow:0 6px 22px rgba(0,0,0,.28)}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    h1{margin:0 0 4px;font-size:1.6rem}
+    .muted{color:var(--muted)}
+    input,button{border-radius:10px;border:1px solid var(--border);background:#0b121a;color:var(--text);padding:10px 12px}
+    button{cursor:pointer}
+    .btn{background:linear-gradient(90deg,rgba(96,165,250,.18),rgba(96,165,250,.10));border-color:#334155}
+    .btn:hover{transform:translateY(-1px);border-color:#475569}
+    .pill{padding:4px 8px;border:1px solid var(--border);border-radius:999px;background:#0b121a}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .player{display:flex;justify-content:space-between;align-items:center}
+    .score{font-weight:700}
+    .list{list-style:none;padding:0;margin:0}
+    .list li{padding:8px 0;border-bottom:1px solid #12202e}
+    .ok{color:var(--ok)} .err{color:var(--danger)}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 id="gameTitle">Loading…</h1>
+      <div class="muted" id="gameMeta"></div>
+      <div class="muted">URL: <span id="gameUrl"></span></div>
+      <div id="flash" class="muted" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 12px">Players</h2>
+      <div id="players" class="grid"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 12px">Add player</h3>
+      <div class="row">
+        <input id="playerName" placeholder="Player name" maxlength="30"/>
+        <input id="playerFaction" placeholder="Faction (optional)" maxlength="40"/>
+        <button id="btnAdd" class="btn">Add to game</button>
+      </div>
+      <div class="muted" style="margin-top:6px">Tip: same name won’t duplicate; it links existing player.</div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 12px">Events</h3>
+      <ul id="events" class="list"></ul>
+    </div>
+  </div>
+
+  <script>
+    // === Supabase client (mesmos valores do index) ===
+    const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const $ = s => document.querySelector(s);
+    const slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1];
+    const flash = (m, ok=false)=>{ const el=$("#flash"); el.textContent=m; el.className=ok?"ok":"err"; setTimeout(()=>el.textContent="",1800); };
+
+    async function loadSummary(){
+      const { data, error } = await supabase.from('game_summary').select('*').eq('slug', slug).maybeSingle();
+      if(error){ console.error(error); flash('Error loading game'); return; }
+      if(!data){ $("#gameTitle").textContent='Game not found'; return; }
+      $("#gameTitle").textContent = data.game_name;
+      $("#gameMeta").textContent = `Created by ${data.creator_name} • ${new Date(data.game_created).toLocaleString()}`;
+      $("#gameUrl").textContent = location.href;
+      renderPlayers(data.participants || []);
+      renderEvents(data.timeline || []);
+    }
+
+    function renderPlayers(participants){
+      const box = $("#players"); box.innerHTML='';
+      (participants||[]).forEach(p=>{
+        const el = document.createElement('div');
+        el.className='card player';
+        el.innerHTML = `
+          <div>
+            <div><strong>${p.player}</strong> <span class="pill">${p.faction || '—'}</span></div>
+            <div class="muted">score: <span class="score">${p.score ?? 0}</span> ${p.winner ? '🏆' : ''}</div>
+          </div>
+          <div class="row">
+            <button class="btn" data-action="plus" data-player="${p.player}">+1</button>
+          </div>`;
+        box.appendChild(el);
+      });
+      box.querySelectorAll('button[data-action="plus"]').forEach(b=> b.onclick = ()=> incScore(b.dataset.player));
+    }
+
+    function renderEvents(list){
+      const ul=$("#events"); ul.innerHTML='';
+      (list||[]).forEach(e=>{
+        const li=document.createElement('li');
+        li.innerHTML = `<strong>${e.type}</strong> <span class="muted">(${new Date(e.time).toLocaleString()})</span><br><code>${JSON.stringify(e.payload)}</code>`;
+        ul.appendChild(li);
+      });
+    }
+
+    $("#btnAdd").onclick = async ()=>{
+      const name = $("#playerName").value.trim();
+      const faction = $("#playerFaction").value.trim();
+      if(!name) return flash('Enter a player name');
+
+      const { data:game } = await supabase.from('games').select('id').eq('slug', slug).single();
+
+      let { data:pl, error:errPl } = await supabase.from('players').insert({ name }).select('id,name').single();
+      if(errPl && errPl.code==='23505'){
+        const res = await supabase.from('players').select('id,name').ilike('name', name).maybeSingle();
+        pl = res.data;
+      } else if(errPl){ return flash('Error creating player'); }
+
+      const { error:errGP } = await supabase.from('game_players').insert({ game_id: game.id, player_id: pl.id, faction: faction || null, score: 0, winner:false });
+      if(errGP && errGP.code!=='23505'){ return flash('Error linking player'); }
+
+      await supabase.from('events').insert({ game_id: game.id, type:'ADD_PLAYER', payload:{ player: pl.name, faction: faction || null }});
+      $("#playerName").value=''; $("#playerFaction").value='';
+      flash('Player added', true); await loadSummary();
+    };
+
+    async function incScore(playerName){
+      const { data:game } = await supabase.from('games').select('id').eq('slug', slug).single();
+      const { data:pl }   = await supabase.from('players').select('id').ilike('name', playerName).single();
+      const { data:gp }   = await supabase.from('game_players').select('id,score').eq('game_id', game.id).eq('player_id', pl.id).single();
+      const newScore = (gp?.score ?? 0) + 1;
+      const { error } = await supabase.from('game_players').update({ score:newScore }).eq('id', gp.id);
+      if(error) return flash('Error updating score');
+      await supabase.from('events').insert({ game_id: game.id, type:'SCORE_UPDATE', payload:{ player: playerName, points: newScore }});
+      flash('+1 point', true); await loadSummary();
+    }
+
+    // Realtime (se Publications estiverem marcadas)
+    function subscribeRealtime(){
+      supabase.channel('rt:gp')
+        .on('postgres_changes', { event:'*', schema:'public', table:'game_players' }, loadSummary)
+        .on('postgres_changes', { event:'*', schema:'public', table:'events' }, loadSummary)
+        .subscribe();
+    }
+
+    (async function init(){
+      if(!slug){ document.body.innerHTML='<div class="wrap"><h1>Missing slug</h1></div>'; return; }
+      await loadSummary(); subscribeRealtime();
+    })();
+  </script>
+</body>
+</html>
