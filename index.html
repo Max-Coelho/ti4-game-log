@@ -11,7 +11,7 @@
       --panel-2: #0c131c;
       --text: #e6edf3;
       --muted: #93a0ad;
-      --muted-2: #7a8896; /* cinza um pouco mais escuro para o rodapé */
+      --muted-2: #7a8896; /* rodapé mais escuro */
       --border: #1e2937;
       --accent: #60a5fa;
       --accent-2: #22d3ee;
@@ -36,7 +36,20 @@
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
-    .subtitle{ color:var(--muted); font-size:1.1rem; margin-bottom:40px; line-height:1.5; }
+    .subtitle{ color:var(--muted); font-size:1.1rem; margin-bottom:20px; line-height:1.5; }
+
+    /* bloco do top faction logo abaixo do subtítulo */
+    .top-faction{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:8px; margin:10px 0 24px;
+    }
+    .top-faction img{
+      width:72px; height:72px; object-fit:contain; image-rendering:auto;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+    }
+    .top-faction .tf-text{
+      font-size:.9rem; color:var(--muted);
+    }
 
     .card{
       background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
@@ -44,7 +57,6 @@
       box-shadow:0 6px 22px rgba(0,0,0,.28); width:100%; max-width:500px;
     }
 
-    /* blocos internos do card */
     .block + .block{ margin-top:24px; }
 
     .btn{
@@ -58,7 +70,6 @@
       border-color:#475569; transform:translateY(-1px);
     }
     .btn.secondary{ background:transparent; border-color:var(--border); }
-    /* hover do secondary igual ao do primary */
     .btn.secondary:hover{
       background:linear-gradient(90deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
       border-color:#475569; transform:translateY(-1px);
@@ -76,24 +87,20 @@
     .divider::before, .divider::after{ content:''; flex:1; height:1px; background:var(--border); }
     .divider span{ padding:0 16px; text-transform:uppercase; letter-spacing:.06em; font-size:.8rem; }
 
-    /* features em 2 colunas */
     .features{ list-style:none; padding:0; margin:0; text-align:left; }
     .features.two-col{
       display:grid; grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap:20px; row-gap:8px;
     }
     .features li{
-      display:flex; align-items:center; color:var(--muted);
-      margin:8px 0;
+      display:flex; align-items:center; color:var(--muted); margin:8px 0;
     }
-    .features li::before{
-      content:'✓'; color:var(--ok); font-weight:bold; margin-right:12px; font-size:1.05rem;
-    }
+    .features li::before{ content:'✓'; color:var(--ok); font-weight:bold; margin-right:12px; font-size:1.05rem; }
+
     @media (max-width:480px){
       .features.two-col{ grid-template-columns: 1fr; }
     }
 
-    /* mensagens */
     .loading{ display:none; color:var(--accent); font-size:.9rem; margin-top:12px; }
     .error{ color:var(--danger); font-size:.9rem; margin-top:12px; display:none; }
     .success{ color:var(--ok); font-size:.9rem; margin-top:12px; display:none; }
@@ -101,20 +108,20 @@
     /* rodapé */
     .footer{
       max-width:500px;
-      margin:32px auto 0; /* espaçamento entre o box e o início do texto */
+      margin:32px auto 0;
       text-align:center;
-      color:var(--muted-2); /* cinza um pouco mais escuro */
+      color:var(--muted-2);
       line-height:1.5;
-      background: transparent; /* mantém o gradiente geral */
+      background: transparent;
     }
     .footer-title{
       font-weight:700;
-      font-size:0.95rem; /* ligeiramente maior que o texto abaixo */
+      font-size:0.95rem;
       margin-bottom:4px;
     }
     .footer-text{
-      font-size:0.85rem; /* um pouco menor */
-      white-space:pre-line; /* mantém quebras de linha do texto fornecido */
+      font-size:0.85rem;
+      white-space:pre-line;
     }
 
     @media (max-width:480px){
@@ -123,25 +130,28 @@
       .card{ padding:24px; }
     }
   </style>
-  <!-- Supabase JS v2 via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="container">
     <div class="logo">TI4 Game Log</div>
+
     <p class="subtitle">
       Create a log for your Twilight Imperium IV matches.<br/>
       Share the unique URL with your friends and track your galactic achievements together!
     </p>
 
+    <!-- TOP FACTION (global) -->
+    <div id="topFaction" class="top-faction" style="display:none">
+      <img id="topFactionIcon" alt="Top faction icon" onerror="this.style.display='none'"/>
+      <div id="topFactionText" class="tf-text"></div>
+    </div>
+
     <div class="card">
-      <!-- BLOCO 1: ações (criar e acessar logs) -->
+      <!-- BLOCO 1: ações -->
       <section class="block" id="actions">
-        <!-- create log: sem campos visíveis, mantém o botão e funcionalidade -->
         <form id="createLogForm">
-          <button type="submit" class="btn" id="createBtn">
-            Create New Game Log
-          </button>
+          <button type="submit" class="btn" id="createBtn">Create New Game Log</button>
           <div class="loading" id="loadingMessage">Creating your personalized log…</div>
           <div class="error" id="errorMessage"></div>
           <div class="success" id="successMessage"></div>
@@ -149,7 +159,6 @@
 
         <div class="divider"><span>or</span></div>
 
-        <!-- acesso a log existente -->
         <form id="accessLogForm">
           <div class="input-group">
             <label for="logId">Existing Log ID (slug)</label>
@@ -159,7 +168,7 @@
         </form>
       </section>
 
-      <!-- BLOCO 2: destaques (features) -->
+      <!-- BLOCO 2: destaques -->
       <section class="block" id="features">
         <div class="divider"><span>features</span></div>
         <ul class="features two-col">
@@ -183,13 +192,128 @@ Sorry. = )</div>
   </div>
 
   <script>
-    // === Supabase client (public URL + anon key) ===
+    // === Supabase client ===
     const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
-
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // DOM elements
+    // ===== ICON MAP / normalização =====
+    const ICON_BASE = 'Faction_Icons/'; // ajuste se sua pasta tiver outro caminho
+    const aliasMap = {
+      // base
+      'Arborec':'Arborec', 'The Arborec':'Arborec',
+      'Barony of Letnev':'Letnev', 'The Barony of Letnev':'Letnev',
+      'Clan of Saar':'Saar','The Clan of Saar':'Saar',
+      'Embers of Muaat':'Muaat','The Embers of Muaat':'Muaat',
+      'Emirates of Hacan':'Hacan','The Emirates of Hacan':'Hacan',
+      'Federation of Sol':'Sol','The Federation of Sol':'Sol',
+      'Ghosts of Creuss':'Creuss','The Ghosts of Creuss':'Creuss',
+      'L1Z1X Mindnet':'L1Z1X','The L1Z1X Mindnet':'L1Z1X',
+      'Mentak Coalition':'Mentak','The Mentak Coalition':'Mentak',
+      'Naalu Collective':'Naalu','The Naalu Collective':'Naalu',
+      'Nekro Virus':'Nekro','The Nekro Virus':'Nekro',
+      'Sardakk N’orr':'Sardakk','Sardakk Norr':'Sardakk',
+      'Universities of Jol-Nar':'JolNar','The Universities of Jol-Nar':'JolNar',
+      'Winnu':'Winnu','The Winnu':'Winnu',
+      'Xxcha Kingdom':'Xxcha','The Xxcha Kingdom':'Xxcha',
+      'Yin Brotherhood':'Yin','The Yin Brotherhood':'Yin',
+      'Yssaril Tribes':'Yssaril','The Yssaril Tribes':'Yssaril',
+      // PoK
+      'Argent Flight':'Argent',
+      'Empyrean':'Empyrean',
+      'Mahact Gene-Sorcerers':'Mahact','The Mahact Gene-Sorcerers':'Mahact',
+      'Naaz-Rokha Alliance':'NaazRokha',
+      'Titans of Ul':'Titans','The Titans of Ul':'Titans',
+      "Vuil'raith Cabal":'Vuilraith',
+      // Keleres
+      'Council Keleres':'Keleres','Keleres':'Keleres'
+    };
+    function canonFactionName(raw){
+      if(!raw) return null;
+      const clean = String(raw).replace(/^the\s+/i,'').replace(/\s+/g,' ').trim();
+      return aliasMap[clean] || clean;
+    }
+    function factionIconPath(name){
+      const key = canonFactionName(name);
+      if(!key) return null;
+      return ICON_BASE + key + '.png';
+    }
+
+    // ===== Top winning faction (global) =====
+    async function fetchTopFactionGlobal(){
+      // Tenta várias estruturas comuns
+      const candidates = [
+        { table:'matches', col:'winner_faction' },
+        { table:'match', col:'winner_faction' },
+        { table:'match_results', col:'faction', filters:[['is_winner', true]] },
+        { table:'results', col:'faction', filters:[['is_winner', true], ['result','win']] },
+        { table:'game_results', col:'faction', filters:[['is_winner', true]] },
+        { table:'games', col:'winner_faction' } // fallback fraco
+      ];
+
+      for(const c of candidates){
+        try{
+          let query = supabase.from(c.table).select(c.col);
+          if(c.filters){
+            for(const [k,v] of c.filters){
+              // tenta ambos os formatos de filtro: boolean e string 'win'
+              if(typeof v === 'boolean') query = query.eq(k, v);
+              else query = query.eq(k, v);
+            }
+          }
+          const { data, error } = await query;
+          if(error || !Array.isArray(data) || data.length===0) continue;
+
+          // Conta por facção em JS
+          const counts = {};
+          for(const row of data){
+            const f = row[c.col];
+            if(!f) continue;
+            const k = canonFactionName(f);
+            if(!k) continue;
+            counts[k] = (counts[k]||0)+1;
+          }
+          const entries = Object.entries(counts);
+          if(entries.length===0) continue;
+
+          entries.sort((a,b)=> b[1]-a[1]);
+          const [topName, wins] = entries[0];
+          return { faction: topName, wins };
+        }catch(e){
+          // segue para o próximo candidato
+          continue;
+        }
+      }
+      return null;
+    }
+
+    async function renderTopFaction(){
+      const holder = document.getElementById('topFaction');
+      const iconEl = document.getElementById('topFactionIcon');
+      const textEl = document.getElementById('topFactionText');
+
+      try{
+        const res = await fetchTopFactionGlobal();
+        if(!res){ holder.style.display='none'; return; }
+
+        const iconPath = factionIconPath(res.faction);
+        if(iconPath){
+          iconEl.src = iconPath;
+          iconEl.alt = res.faction + ' icon';
+          iconEl.style.display = 'block';
+          iconEl.title = res.faction;
+        }else{
+          iconEl.style.display = 'none';
+        }
+        textEl.textContent = `Top current winning faction: ${res.wins} wins.`;
+        holder.style.display = 'flex';
+      }catch(err){
+        console.error(err);
+        holder.style.display='none';
+      }
+    }
+
+    // ===== Ações padrão já existentes =====
     const createForm      = document.getElementById('createLogForm');
     const accessForm      = document.getElementById('accessLogForm');
     const loadingMessage  = document.getElementById('loadingMessage');
@@ -197,25 +321,11 @@ Sorry. = )</div>
     const successMessage  = document.getElementById('successMessage');
     const createBtn       = document.getElementById('createBtn');
 
-    // Helpers
-    function showLoading(show){
-      loadingMessage.style.display = show ? 'block' : 'none';
-      createBtn.disabled = show;
-    }
-    function showError(msg){
-      errorMessage.textContent = msg;
-      errorMessage.style.display = 'block';
-    }
-    function showSuccess(msg){
-      successMessage.textContent = msg;
-      successMessage.style.display = 'block';
-    }
-    function hideMessages(){
-      errorMessage.style.display = 'none';
-      successMessage.style.display = 'none';
-    }
+    function showLoading(show){ loadingMessage.style.display = show ? 'block' : 'none'; createBtn.disabled = show; }
+    function showError(msg){ errorMessage.textContent = msg; errorMessage.style.display = 'block'; }
+    function showSuccess(msg){ successMessage.textContent = msg; successMessage.style.display = 'block'; }
+    function hideMessages(){ errorMessage.style.display = 'none'; successMessage.style.display = 'none'; }
 
-    // Gera valores padrões já que removemos os campos visuais
     function defaultPlaygroupName(){
       const d = new Date();
       const y = d.getFullYear();
@@ -224,15 +334,11 @@ Sorry. = )</div>
       return `Playgroup ${y}-${m}-${day}`;
     }
 
-    // Create new game log (INSERT into public.games and get slug back)
     createForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
-
-      const name = defaultPlaygroupName();       // valor padrão
-      const creatorName = 'Anonymous';           // valor padrão
-
-      showLoading(true);
-      hideMessages();
+      const name = defaultPlaygroupName();
+      const creatorName = 'Anonymous';
+      showLoading(true); hideMessages();
 
       try{
         const { data, error } = await supabase
@@ -242,33 +348,21 @@ Sorry. = )</div>
           .single();
 
         if(error) throw error;
-
-        showLoading(false);
-        showSuccess('Log created successfully! Redirecting…');
-
+        showLoading(false); showSuccess('Log created successfully! Redirecting…');
         const slug = data.slug;
         setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 1200);
-
       }catch(err){
         console.error(err);
-        showLoading(false);
-        showError('Error creating the log. Please try again.');
+        showLoading(false); showError('Error creating the log. Please try again.');
       }
     });
 
-    // Access existing log (SELECT by slug)
     accessForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const slug = document.getElementById('logId').value.trim();
+      if(!slug){ showError('Please enter a log ID (slug).'); return; }
 
-      if(!slug){
-        showError('Please enter a log ID (slug).');
-        return;
-      }
-
-      showLoading(true);
-      hideMessages();
-
+      showLoading(true); hideMessages();
       try{
         const { data, error } = await supabase
           .from('games')
@@ -277,20 +371,17 @@ Sorry. = )</div>
           .maybeSingle();
 
         if(error) throw error;
-        if(!data){ throw new Error('Log not found'); }
+        if(!data) throw new Error('Log not found');
 
-        showLoading(false);
-        showSuccess('Log found! Redirecting…');
+        showLoading(false); showSuccess('Log found! Redirecting…');
         setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 900);
-
       }catch(err){
         console.error(err);
-        showLoading(false);
-        showError('Log not found. Please check the ID and try again.');
+        showLoading(false); showError('Log not found. Please check the ID and try again.');
       }
     });
 
-    // If URL already contains /log/<id>, reflect it on the page (cosmetic)
+    // Mostra info do slug na URL (cosmético)
     const urlPath = window.location.pathname;
     const match = urlPath.match(/\/log\/([a-z0-9]{6,12})/i);
     if(match){
@@ -300,6 +391,9 @@ Sorry. = )</div>
       const logIdField = document.getElementById('logId');
       if (logIdField) logIdField.value = slug;
     }
+
+    // Renderiza o Top Faction ao carregar
+    renderTopFaction();
   </script>
 </body>
 </html>
