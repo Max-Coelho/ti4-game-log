@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/log/:slug", "destination": "/" }
+    { "source": "/log/:slug", "destination": "/log.html" }
   ]
 }
