@@ -156,7 +156,12 @@
 <body>
   <div class="container">
     <header>
-      <div><div class="title">Twilight Imperium IV — Game Log</div></div>
+      <div>
+  <div class="title">
+    Twilight Imperium IV — Game Log
+    <span id="slugDisplay" style="color:#77CBD5;margin-left:6px"></span>
+  </div>
+</div>
       <div class="tools">
         <button class="btn primary" id="exportBtn" title="Export your data as JSON">Export JSON</button>
         <label class="btn ghost" for="importInput" title="Import a previously exported JSON">
@@ -657,6 +662,10 @@ const supabase = window.supabase?.createClient
   : null;
 
 const __slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1] || null;
+  if (__slug) {
+  const el = document.getElementById('slugDisplay');
+  if (el) el.textContent = '— ' + __slug;
+}
 const __flash = (msg, ok=false)=>{
   const el = document.getElementById('supabaseMsg');
   if(!el) return;
