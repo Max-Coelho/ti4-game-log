@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TI4 / PoK — Game Log (Dark)</title>
@@ -645,38 +646,32 @@
   </script>
 
 <script>
+<script>
 /* ======= Supabase sync (não altera layout) ======= */
-
-// 1) Config do Supabase (mesmos valores do index)
 const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
 const supabase = window.supabase?.createClient
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
-// 2) Slug da URL (/log/<slug>)
-const __slugMatch = location.pathname.match(/\/log\/([a-z0-9\-]+)/i);
-const __slug = __slugMatch ? __slugMatch[1] : null;
-
-// util de “flash” na barra superior (reaproveita se existir)
+const __slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1] || null;
 const __flash = (msg, ok=false)=>{
-  const el = document.getElementById('flash') || Object.assign(document.createElement('div'), { id:'flash', style:'margin:8px 0;color:#93a0ad' });
-  if(!document.getElementById('flash')) document.body.prepend(el);
+  let el = document.getElementById('flash');
+  if(!el){ el=document.createElement('div'); el.id='flash'; el.style.cssText='margin:8px 0;color:#93a0ad'; document.body.prepend(el); }
   el.textContent = msg; el.style.color = ok ? '#10b981' : '#ef4444';
   setTimeout(()=>{ el.textContent=''; }, 1800);
 };
 
-// 3) Carrega id do “log” pelo slug
-async function __getGameIdBySlug() {
+async function __getGameIdBySlug(){
   const { data, error } = await supabase.from('games').select('id').eq('slug', __slug).maybeSingle();
-  if(error || !data){ throw new Error('Log not found for slug'); }
+  if(error || !data) throw new Error('Log not found for slug');
   return data.id;
 }
 
-// 4) Carrega todos os jogos salvos (type=ADD_GAME_ENTRY) e popula a variável global `games`
-async function __loadFromSupabase() {
+// carrega eventos -> window.games
+async function __loadFromSupabase(){
   if(!supabase || !__slug) return;
-  try {
+  try{
     const gameId = await __getGameIdBySlug();
     const { data, error } = await supabase
       .from('events')
@@ -685,80 +680,60 @@ async function __loadFromSupabase() {
       .eq('type', 'ADD_GAME_ENTRY')
       .order('created_at', { ascending: true });
     if(error) throw error;
-
-    // Reconstrói o array `games` exatamente como o app espera
-    const arr = (data || []).map(r => r.payload || {}).filter(x => x && x.id);
+    const arr = (data||[]).map(r=>r.payload||{}).filter(x=>x && x.id);
     window.games = Array.isArray(arr) ? arr : [];
-    if (typeof window.render === 'function') window.render();
+    if(typeof window.render==='function') window.render();
     __flash('Loaded from Supabase', true);
-  } catch (e) {
-    console.warn(e);
-    __flash('Could not load from Supabase');
-  }
+  }catch(e){ console.warn(e); __flash('Could not load from Supabase'); }
 }
 
-// 5) Sobrescreve saveGames para persistir no Supabase (substitui todo o conjunto de jogos do slug)
+// intercepta saveGames -> grava tudo em events (substitui conjunto)
 (function __overrideSave(){
   if(!supabase || !__slug) return;
   const __origSave = window.saveGames || function(){};
   let __syncTimer = null;
-
   window.saveGames = function(arr){
-    // evita gravar em localStorage (opcional): não chama __origSave
-    // __origSave(arr); // se quiser manter cópia local, descomente esta linha.
+    // se quiser manter cópia local também, descomente:
+    // __origSave(arr);
 
     clearTimeout(__syncTimer);
     __syncTimer = setTimeout(async ()=>{
-      try {
+      try{
         const gameId = await __getGameIdBySlug();
-
-        // Apaga eventos antigos desse slug / tipo
+        // apaga eventos antigos desse log
         const { error: delErr } = await supabase
           .from('events')
           .delete()
           .eq('game_id', gameId)
           .eq('type', 'ADD_GAME_ENTRY');
         if(delErr) throw delErr;
-
-        // Insere todos os jogos atuais como eventos
-        const rows = (arr || []).map(g => ({ game_id: gameId, type: 'ADD_GAME_ENTRY', payload: g }));
+        // insere todos os jogos atuais como eventos
+        const rows = (arr||[]).map(g=>({ game_id: gameId, type:'ADD_GAME_ENTRY', payload:g }));
         if(rows.length){
           const { error: insErr } = await supabase.from('events').insert(rows);
           if(insErr) throw insErr;
         }
-
         __flash('Saved to Supabase', true);
-      } catch (e) {
-        console.error(e);
-        __flash('Save failed (Supabase)');
-      }
-    }, 300); // debounce leve
+      }catch(e){ console.error(e); __flash('Save failed (Supabase)'); }
+    }, 300);
   };
 })();
 
-// 6) (Opcional) Realtime para atualizar se alguém editar em outra máquina
+// realtime (se marcado em Publications)
 (function __subscribeRealtime(){
   if(!supabase || !__slug) return;
   supabase.channel('rt:log')
     .on('postgres_changes', { event:'*', schema:'public', table:'events' }, (payload)=>{
-      // somente eventos do mesmo log e tipo correto
-      if(payload?.new?.type === 'ADD_GAME_ENTRY'){
-        __loadFromSupabase();
-      }
+      if(payload?.new?.type === 'ADD_GAME_ENTRY'){ __loadFromSupabase(); }
     })
     .subscribe();
 })();
 
-// 7) Bootstrap inicial
-(async function(){
-  if(!__slug){
-    // quando abrir /log.html direto, seu layout mostra “Missing slug” — deixamos assim
-    return;
-  }
-  await __loadFromSupabase();
+(async function init(){
+  if(__slug) await __loadFromSupabase();
 })();
 </script>
 
-  
+
 </body>
 </html>
