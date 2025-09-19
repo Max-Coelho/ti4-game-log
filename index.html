@@ -1,410 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twilight Imperium IV - Game Log</title>
-    <style>
-        :root {
-            --bg: #0b0f14;
-            --panel: #0f1720;
-            --panel-2: #0c131c;
-            --text: #e6edf3;
-            --muted: #93a0ad;
-            --border: #1e2937;
-            --accent: #60a5fa;
-            --accent-2: #22d3ee;
-            --ok: #10b981;
-            --danger: #ef4444;
-            --warn: #f59e0b;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            margin: 0;
-            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
-            background: linear-gradient(180deg, #0a0f14 0%, #0b1016 100%);
-            color: var(--text);
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        .logo {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .subtitle {
-            color: var(--muted);
-            font-size: 1.1rem;
-            margin-bottom: 40px;
-            line-height: 1.5;
-        }
-
-        .card {
-            background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.28);
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .btn {
-            background: linear-gradient(90deg, rgba(96, 165, 250, 0.18), rgba(96, 165, 250, 0.10));
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 16px 24px;
-            font-size: 1.1rem;
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.15s ease;
-            text-decoration: none;
-            display: inline-block;
-            width: 100%;
-            margin: 12px 0;
-        }
-
-        .btn:hover {
-            background: linear-gradient(90deg, rgba(96, 165, 250, 0.25), rgba(96, 165, 250, 0.15));
-            border-color: #475569;
-            transform: translateY(-1px);
-        }
-
-        .btn.secondary {
-            background: transparent;
-            border-color: var(--border);
-        }
-
-        .btn.secondary:hover {
-            background: rgba(96, 165, 250, 0.05);
-            border-color: #334155;
-        }
-
-        .input-group {
-            margin: 20px 0;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            color: var(--muted);
-            font-size: 0.9rem;
-            margin-bottom: 6px;
-        }
-
-        .input-group input {
-            width: 100%;
-            background: #0b121a;
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .input-group input:focus {
-            border-color: #334155;
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 30px 0;
-            color: var(--muted);
-            font-size: 0.9rem;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .divider span {
-            padding: 0 16px;
-        }
-
-        .features {
-            list-style: none;
-            padding: 0;
-            margin: 24px 0;
-            text-align: left;
-        }
-
-        .features li {
-            display: flex;
-            align-items: center;
-            margin: 12px 0;
-            color: var(--muted);
-        }
-
-        .features li::before {
-            content: '✓';
-            color: var(--ok);
-            font-weight: bold;
-            margin-right: 12px;
-            font-size: 1.1rem;
-        }
-
-        .loading {
-            display: none;
-            color: var(--accent);
-            font-size: 0.9rem;
-            margin-top: 12px;
-        }
-
-        .error {
-            color: var(--danger);
-            font-size: 0.9rem;
-            margin-top: 12px;
-            display: none;
-        }
-
-        .success {
-            color: var(--ok);
-            font-size: 0.9rem;
-            margin-top: 12px;
-            display: none;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .logo {
-                font-size: 2rem;
-            }
-            
-            .card {
-                padding: 24px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Twilight Imperium IV — Game Log</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #0f1720;
+      --panel-2: #0c131c;
+      --text: #e6edf3;
+      --muted: #93a0ad;
+      --border: #1e2937;
+      --accent: #60a5fa;
+      --accent-2: #22d3ee;
+      --ok: #10b981;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+    }
+    *{ box-sizing:border-box }
+    html, body{
+      height:100%;
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+      background: linear-gradient(180deg, #0a0f14 0%, #0b1016 100%);
+      color: var(--text);
+    }
+    .container{
+      max-width:600px; margin:0 auto; padding:40px 20px; min-height:100vh;
+      display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+    }
+    .logo{
+      font-size:2.5rem; font-weight:800; margin-bottom:8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .subtitle{ color:var(--muted); font-size:1.1rem; margin-bottom:40px; line-height:1.5; }
+    .card{
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+      border:1px solid var(--border); border-radius:16px; padding:32px;
+      box-shadow:0 6px 22px rgba(0,0,0,.28); width:100%; max-width:500px;
+    }
+    .btn{
+      background: linear-gradient(90deg, rgba(96,165,250,.18), rgba(96,165,250,.10));
+      border:1px solid #334155; border-radius:12px; padding:16px 24px;
+      font-size:1.1rem; color:var(--text); cursor:pointer; transition:all .15s ease;
+      text-decoration:none; display:inline-block; width:100%; margin:12px 0;
+    }
+    .btn:hover{ background:linear-gradient(90deg, rgba(96,165,250,.25), rgba(96,165,250,.15)); border-color:#475569; transform:translateY(-1px); }
+    .btn.secondary{ background:transparent; border-color:var(--border); }
+    .btn.secondary:hover{ background:rgba(96,165,250,.05); border-color:#334155; }
+    .input-group{ margin:20px 0; text-align:left; }
+    .input-group label{ display:block; color:var(--muted); font-size:.9rem; margin-bottom:6px; }
+    .input-group input{
+      width:100%; background:#0b121a; color:var(--text); border:1px solid var(--border);
+      border-radius:12px; padding:12px; font-size:1rem; outline:none;
+    }
+    .input-group input:focus{ border-color:#334155; box-shadow:0 0 0 3px rgba(96,165,250,.18); }
+    .divider{ display:flex; align-items:center; margin:30px 0; color:var(--muted); font-size:.9rem; }
+    .divider::before, .divider::after{ content:''; flex:1; height:1px; background:var(--border); }
+    .divider span{ padding:0 16px; }
+    .features{ list-style:none; padding:0; margin:24px 0; text-align:left; }
+    .features li{ display:flex; align-items:center; margin:12px 0; color:var(--muted); }
+    .features li::before{ content:'✓'; color:var(--ok); font-weight:bold; margin-right:12px; font-size:1.1rem; }
+    .loading{ display:none; color:var(--accent); font-size:.9rem; margin-top:12px; }
+    .error{ color:var(--danger); font-size:.9rem; margin-top:12px; display:none; }
+    .success{ color:var(--ok); font-size:.9rem; margin-top:12px; display:none; }
+    @media (max-width:480px){
+      .container{ padding:20px; }
+      .logo{ font-size:2rem; }
+      .card{ padding:24px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">TI4 Game Log</div>
-        <p class="subtitle">
-            Create your personalized Twilight Imperium IV game tracker.<br>
-            Share with your friends and track galactic conquests together!
-        </p>
+  <div class="container">
+    <div class="logo">TI4 Game Log</div>
+    <p class="subtitle">
+      Create a personalized log for your Twilight Imperium IV matches.<br/>
+      Share it with your friends and track your galactic achievements together!
+    </p>
 
-        <div class="card">
-            <form id="createLogForm">
-                <div class="input-group">
-                    <label for="logName">Name your gaming group</label>
-                    <input type="text" id="logName" placeholder="e.g., The Galactic Empire" required maxlength="50">
-                </div>
-
-                <div class="input-group">
-                    <label for="creatorName">Your name</label>
-                    <input type="text" id="creatorName" placeholder="e.g., Admiral Thrawn" required maxlength="30">
-                </div>
-
-                <button type="submit" class="btn" id="createBtn">
-                    Create New Game Log
-                </button>
-
-                <div class="loading" id="loadingMessage">
-                    Creating your personalized log...
-                </div>
-
-                <div class="error" id="errorMessage"></div>
-                <div class="success" id="successMessage"></div>
-            </form>
-
-            <div class="divider">
-                <span>or</span>
-            </div>
-
-            <form id="accessLogForm">
-                <div class="input-group">
-                    <label for="logId">Existing Log ID</label>
-                    <input type="text" id="logId" placeholder="e.g., abc123xyz" maxlength="20">
-                </div>
-
-                <button type="submit" class="btn secondary">
-                    Access Existing Log
-                </button>
-            </form>
-
-            <ul class="features">
-                <li>Intuitive and responsive interface</li>
-                <li>Automatic statistics and rankings</li>
-                <li>Share via unique URL</li>
-                <li>Complete game history</li>
-                <li>Support for all factions (including Keleres)</li>
-                <li>100% free to use</li>
-            </ul>
+    <div class="card">
+      <form id="createLogForm">
+        <div class="input-group">
+          <label for="logName">Your playgroup name</label>
+          <input type="text" id="logName" placeholder="e.g., Galactic Empire of Friends" required maxlength="50"/>
         </div>
+
+        <div class="input-group">
+          <label for="creatorName">Your name</label>
+          <input type="text" id="creatorName" placeholder="e.g., John" required maxlength="30"/>
+        </div>
+
+        <button type="submit" class="btn" id="createBtn">
+          Create New Game Log
+        </button>
+
+        <div class="loading" id="loadingMessage">Creating your personalized log…</div>
+        <div class="error" id="errorMessage"></div>
+        <div class="success" id="successMessage"></div>
+      </form>
+
+      <div class="divider"><span>or</span></div>
+
+      <form id="accessLogForm">
+        <div class="input-group">
+          <label for="logId">Existing Log ID</label>
+          <input type="text" id="logId" placeholder="e.g., abc123xyz" maxlength="20"/>
+        </div>
+        <button type="submit" class="btn secondary">Access Existing Log</button>
+      </form>
+
+      <ul class="features">
+        <li>Clean, responsive interface</li>
+        <li>Automatic stats and rankings</li>
+        <li>Sharable unique URL</li>
+        <li>Complete match history</li>
+        <li>Support for all factions</li>
+        <li>Free to use</li>
+      </ul>
     </div>
+  </div>
 
-    <script>
-        const API_BASE = window.location.hostname === 'localhost' 
-            ? 'http://localhost:3000/api' 
-            : '/api'; // Will be configured for Supabase
+  <script>
+    // Placeholder API route base. We'll swap this when wiring to Supabase.
+    const API_BASE = window.location.hostname === 'localhost'
+      ? 'http://localhost:3000/api'
+      : 'https://your-supabase-functions-url';
 
-        // Generate unique log ID
-        function generateLogId() {
-            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-            let result = '';
-            for (let i = 0; i < 8; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
-        }
+    // Simple unique ID generator (8 chars)
+    function generateLogId(){
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for (let i = 0; i < 8; i++) result += chars.charAt(Math.floor(Math.random()*chars.length));
+      return result;
+    }
 
-        // DOM elements
-        const createForm = document.getElementById('createLogForm');
-        const accessForm = document.getElementById('accessLogForm');
-        const loadingMessage = document.getElementById('loadingMessage');
-        const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
+    // DOM elements
+    const createForm      = document.getElementById('createLogForm');
+    const accessForm      = document.getElementById('accessLogForm');
+    const loadingMessage  = document.getElementById('loadingMessage');
+    const errorMessage    = document.getElementById('errorMessage');
+    const successMessage  = document.getElementById('successMessage');
 
-        // Create new log
-        createForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const logName = document.getElementById('logName').value.trim();
-            const creatorName = document.getElementById('creatorName').value.trim();
-            
-            if (!logName || !creatorName) {
-                showError('Please fill in all fields.');
-                return;
-            }
+    // Create new log (simulated for now)
+    createForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const logName = document.getElementById('logName').value.trim();
+      const creatorName = document.getElementById('creatorName').value.trim();
 
-            showLoading(true);
-            hideMessages();
+      if(!logName || !creatorName){
+        showError('Please fill out all fields.');
+        return;
+      }
 
-            try {
-                const logId = generateLogId();
-                
-                // Simulate API call (will be replaced with Supabase)
-                const logData = {
-                    id: logId,
-                    name: logName,
-                    creator: creatorName,
-                    created_at: new Date().toISOString(),
-                    games: []
-                };
+      showLoading(true);
+      hideMessages();
 
-                // Simulate delay
-                await new Promise(resolve => setTimeout(resolve, 1500));
+      try{
+        const logId = generateLogId();
 
-                // Future Supabase call:
-                // const response = await fetch(`${API_BASE}/logs`, {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify(logData)
-                // });
+        // Simulated creation (we’ll replace with Supabase later)
+        const logData = {
+          id: logId,
+          name: logName,
+          creator: creatorName,
+          created_at: new Date().toISOString(),
+          games: []
+        };
 
-                showLoading(false);
-                showSuccess(`Log created successfully! Redirecting...`);
-                
-                // Redirect to main app
-                setTimeout(() => {
-                    window.location.href = `/log/${logId}`;
-                }, 2000);
+        await new Promise(r => setTimeout(r, 1500)); // simulate API delay
 
-            } catch (error) {
-                showLoading(false);
-                showError('Error creating log. Please try again.');
-                console.error('Error:', error);
-            }
-        });
+        // Real call (later):
+        // const response = await fetch(`${API_BASE}/logs`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(logData) });
 
-        // Access existing log
-        accessForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const logId = document.getElementById('logId').value.trim();
-            
-            if (!logId) {
-                showError('Please enter a log ID.');
-                return;
-            }
+        showLoading(false);
+        showSuccess('Log created successfully! Redirecting…');
 
-            showLoading(true);
-            hideMessages();
+        setTimeout(()=>{ window.location.href = `/log/${logId}`; }, 2000);
+      }catch(err){
+        showLoading(false);
+        showError('Error creating the log. Please try again.');
+        console.error('Error:', err);
+      }
+    });
 
-            try {
-                // Simulate verification (will be replaced with Supabase)
-                await new Promise(resolve => setTimeout(resolve, 1000));
+    // Access existing log (simulated for now)
+    accessForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const logId = document.getElementById('logId').value.trim();
 
-                // Future Supabase call:
-                // const response = await fetch(`${API_BASE}/logs/${logId}`);
-                // if (!response.ok) throw new Error('Log not found');
+      if(!logId){
+        showError('Please enter a log ID.');
+        return;
+      }
 
-                showLoading(false);
-                showSuccess('Log found! Redirecting...');
-                
-                setTimeout(() => {
-                    window.location.href = `/log/${logId}`;
-                }, 1500);
+      showLoading(true);
+      hideMessages();
 
-            } catch (error) {
-                showLoading(false);
-                showError('Log not found. Please check the ID and try again.');
-                console.error('Error:', error);
-            }
-        });
+      try{
+        await new Promise(r => setTimeout(r, 1000)); // simulate check
 
-        // Helper functions
-        function showLoading(show) {
-            loadingMessage.style.display = show ? 'block' : 'none';
-            document.getElementById('createBtn').disabled = show;
-        }
+        // Real check (later):
+        // const response = await fetch(`${API_BASE}/logs/${logId}`);
+        // if(!response.ok) throw new Error('Log not found');
 
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-        }
+        showLoading(false);
+        showSuccess('Log found! Redirecting…');
+        setTimeout(()=>{ window.location.href = `/log/${logId}`; }, 1500);
+      }catch(err){
+        showLoading(false);
+        showError('Log not found. Please check the ID and try again.');
+        console.error('Error:', err);
+      }
+    });
 
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
-        }
+    // Helpers
+    function showLoading(show){
+      loadingMessage.style.display = show ? 'block' : 'none';
+      document.getElementById('createBtn').disabled = show;
+    }
+    function showError(msg){
+      errorMessage.textContent = msg;
+      errorMessage.style.display = 'block';
+    }
+    function showSuccess(msg){
+      successMessage.textContent = msg;
+      successMessage.style.display = 'block';
+    }
+    function hideMessages(){
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+    }
 
-        function hideMessages() {
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-        }
-
-        // Check if accessing a specific log directly
-        const urlPath = window.location.pathname;
-        const logIdMatch = urlPath.match(/\/log\/([a-z0-9]{8})/);
-        
-        if (logIdMatch) {
-            const logId = logIdMatch[1];
-            document.getElementById('logId').value = logId;
-            document.querySelector('.subtitle').textContent = `Accessing log: ${logId}`;
-        }
-    </script>
+    // If URL already contains /log/<id>, reflect on the page
+    const urlPath = window.location.pathname;
+    const logIdMatch = urlPath.match(/\/log\/([a-z0-9]{8})/);
+    if(logIdMatch){
+      const logId = logIdMatch[1];
+      document.getElementById('logId').value = logId;
+      document.querySelector('.subtitle').textContent = `Accessing log: ${logId}`;
+    }
+  </script>
 </body>
 </html>
