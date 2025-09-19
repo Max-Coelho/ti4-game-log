@@ -320,7 +320,7 @@
             if(norm && norm!==p.faction){ p.faction=norm; changed=true; }
           });
         });
-        if(changed) saveGames(games);
+        if(changed) window.saveGames(games);
       }catch(e){}
     })();
 
@@ -409,7 +409,7 @@
       const maxVP=Math.max(...players.map(p=>p.vp||0));
       const winnerIdx=players.reduce((arr,p,idx)=>{if((p.vp||0)===maxVP)arr.push(idx);return arr},[]);
       const id=(crypto?.randomUUID?.()||('g_'+Date.now()+Math.random().toString(16).slice(2)));
-      games.push({id,date,durationMinutes:durMinutes,players,winners:winnerIdx}); saveGames(games);
+      games.push({id,date,durationMinutes:durMinutes,players,winners:winnerIdx}); window.saveGames(games);
 
       render();
       $$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');
@@ -517,7 +517,7 @@
       }
       gamesList.appendChild(frag);
 
-      $$('button[data-del]').forEach(btn=>{ btn.onclick = ()=>{ const id=btn.getAttribute('data-del'); games = games.filter(g=>g.id!==id); saveGames(games); render(); } });
+      $$('button[data-del]').forEach(btn=>{ btn.onclick = ()=>{ const id=btn.getAttribute('data-del'); games = games.filter(g=>g.id!==id); window.saveGames(games); render(); } });
     }
 
     function render(){
@@ -634,8 +634,8 @@
     importInput.onchange=(e)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const incoming=JSON.parse(reader.result);if(!Array.isArray(incoming))throw new Error('Invalid file');const ids=new Set(games.map(g=>g.id));let added=0;for(const g of incoming){if(g&&typeof g==='object'&&g.id&&!ids.has(g.id)){
               if(Number.isFinite(g.durationHours) && !Number.isFinite(g.durationMinutes)){ g.durationMinutes=Math.round(Number(g.durationHours)*60); delete g.durationHours; }
               games.push(g);ids.add(g.id);added++;
-            }}saveGames(games);render();alert(`Imported ${added} game(s).`)}catch(err){alert('Failed to import: '+err.message)}finally{importInput.value=''}};reader.readAsText(file)};
-    resetBtn.onclick=()=>{if(confirm('Delete ALL logged games? This cannot be undone.')){games=[];saveGames(games);render()}};
+            }}window.saveGames(games);render();alert(`Imported ${added} game(s).`)}catch(err){alert('Failed to import: '+err.message)}finally{importInput.value=''}};reader.readAsText(file)};
+    resetBtn.onclick=()=>{if(confirm('Delete ALL logged games? This cannot be undone.')){games=[];window.saveGames(games);render()}};
 
     // Atalhos/sort
     window.addEventListener('keydown',(ev)=>{if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='s'){ev.preventDefault();form.requestSubmit()}});
