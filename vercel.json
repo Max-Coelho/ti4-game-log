@@ -1,6 +1,7 @@
 {
   "version": 2,
   "routes": [
-    { "src": "^/log/[^/]+$", "dest": "/log.html" }
+    { "src": "^/log/[^/]+$", "dest": "/log.html" },
+    { "src": "^/log/Faction_Icons/(.*)$", "dest": "/Faction_Icons/$1" }
   ]
 }
