@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -211,28 +211,28 @@
     <div class="container">
         <div class="logo">TI4 Game Log</div>
         <p class="subtitle">
-            Crie seu registro personalizado de partidas do Twilight Imperium IV.<br>
-            Compartilhe com seus amigos e acompanhem juntos o histórico de conquistas galácticas!
+            Create your personalized Twilight Imperium IV game tracker.<br>
+            Share with your friends and track galactic conquests together!
         </p>
 
         <div class="card">
             <form id="createLogForm">
                 <div class="input-group">
-                    <label for="logName">Nome do seu grupo de jogos</label>
-                    <input type="text" id="logName" placeholder="Ex: Império Galáctico dos Amigos" required maxlength="50">
+                    <label for="logName">Name your gaming group</label>
+                    <input type="text" id="logName" placeholder="e.g., The Galactic Empire" required maxlength="50">
                 </div>
 
                 <div class="input-group">
-                    <label for="creatorName">Seu nome</label>
-                    <input type="text" id="creatorName" placeholder="Ex: João" required maxlength="30">
+                    <label for="creatorName">Your name</label>
+                    <input type="text" id="creatorName" placeholder="e.g., Admiral Thrawn" required maxlength="30">
                 </div>
 
                 <button type="submit" class="btn" id="createBtn">
-                    Criar Novo Log de Jogos
+                    Create New Game Log
                 </button>
 
                 <div class="loading" id="loadingMessage">
-                    Criando seu log personalizado...
+                    Creating your personalized log...
                 </div>
 
                 <div class="error" id="errorMessage"></div>
@@ -240,27 +240,27 @@
             </form>
 
             <div class="divider">
-                <span>ou</span>
+                <span>or</span>
             </div>
 
             <form id="accessLogForm">
                 <div class="input-group">
-                    <label for="logId">ID do Log Existente</label>
-                    <input type="text" id="logId" placeholder="Ex: abc123xyz" maxlength="20">
+                    <label for="logId">Existing Log ID</label>
+                    <input type="text" id="logId" placeholder="e.g., abc123xyz" maxlength="20">
                 </div>
 
                 <button type="submit" class="btn secondary">
-                    Acessar Log Existente
+                    Access Existing Log
                 </button>
             </form>
 
             <ul class="features">
-                <li>Interface intuitiva e responsiva</li>
-                <li>Estatísticas automáticas e rankings</li>
-                <li>Compartilhamento via URL única</li>
-                <li>Histórico completo de partidas</li>
-                <li>Suporte a todas as facções</li>
-                <li>100% gratuito</li>
+                <li>Intuitive and responsive interface</li>
+                <li>Automatic statistics and rankings</li>
+                <li>Share via unique URL</li>
+                <li>Complete game history</li>
+                <li>Support for all factions (including Keleres)</li>
+                <li>100% free to use</li>
             </ul>
         </div>
     </div>
@@ -268,9 +268,9 @@
     <script>
         const API_BASE = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api' 
-            : 'https://your-supabase-functions-url';
+            : '/api'; // Will be configured for Supabase
 
-        // Gerar ID único simples
+        // Generate unique log ID
         function generateLogId() {
             const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
@@ -280,14 +280,14 @@
             return result;
         }
 
-        // Elementos do DOM
+        // DOM elements
         const createForm = document.getElementById('createLogForm');
         const accessForm = document.getElementById('accessLogForm');
         const loadingMessage = document.getElementById('loadingMessage');
         const errorMessage = document.getElementById('errorMessage');
         const successMessage = document.getElementById('successMessage');
 
-        // Criar novo log
+        // Create new log
         createForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -295,7 +295,7 @@
             const creatorName = document.getElementById('creatorName').value.trim();
             
             if (!logName || !creatorName) {
-                showError('Por favor, preencha todos os campos.');
+                showError('Please fill in all fields.');
                 return;
             }
 
@@ -305,7 +305,7 @@
             try {
                 const logId = generateLogId();
                 
-                // Por enquanto, simular criação (na Etapa 4 conectaremos com Supabase)
+                // Simulate API call (will be replaced with Supabase)
                 const logData = {
                     id: logId,
                     name: logName,
@@ -314,10 +314,10 @@
                     games: []
                 };
 
-                // Simular delay da API
+                // Simulate delay
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // Aqui será a chamada real para Supabase:
+                // Future Supabase call:
                 // const response = await fetch(`${API_BASE}/logs`, {
                 //     method: 'POST',
                 //     headers: { 'Content-Type': 'application/json' },
@@ -325,28 +325,28 @@
                 // });
 
                 showLoading(false);
-                showSuccess(`Log criado com sucesso! Redirecionando...`);
+                showSuccess(`Log created successfully! Redirecting...`);
                 
-                // Redirecionar para o app principal
+                // Redirect to main app
                 setTimeout(() => {
                     window.location.href = `/log/${logId}`;
                 }, 2000);
 
             } catch (error) {
                 showLoading(false);
-                showError('Erro ao criar o log. Tente novamente.');
-                console.error('Erro:', error);
+                showError('Error creating log. Please try again.');
+                console.error('Error:', error);
             }
         });
 
-        // Acessar log existente
+        // Access existing log
         accessForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const logId = document.getElementById('logId').value.trim();
             
             if (!logId) {
-                showError('Por favor, informe o ID do log.');
+                showError('Please enter a log ID.');
                 return;
             }
 
@@ -354,15 +354,15 @@
             hideMessages();
 
             try {
-                // Por enquanto, simular verificação
+                // Simulate verification (will be replaced with Supabase)
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
-                // Aqui será a verificação real:
+                // Future Supabase call:
                 // const response = await fetch(`${API_BASE}/logs/${logId}`);
-                // if (!response.ok) throw new Error('Log não encontrado');
+                // if (!response.ok) throw new Error('Log not found');
 
                 showLoading(false);
-                showSuccess('Log encontrado! Redirecionando...');
+                showSuccess('Log found! Redirecting...');
                 
                 setTimeout(() => {
                     window.location.href = `/log/${logId}`;
@@ -370,12 +370,12 @@
 
             } catch (error) {
                 showLoading(false);
-                showError('Log não encontrado. Verifique o ID e tente novamente.');
-                console.error('Erro:', error);
+                showError('Log not found. Please check the ID and try again.');
+                console.error('Error:', error);
             }
         });
 
-        // Funções auxiliares
+        // Helper functions
         function showLoading(show) {
             loadingMessage.style.display = show ? 'block' : 'none';
             document.getElementById('createBtn').disabled = show;
@@ -396,15 +396,14 @@
             successMessage.style.display = 'none';
         }
 
-        // Verificar se já tem um log ID na URL (caso acesse direto)
+        // Check if accessing a specific log directly
         const urlPath = window.location.pathname;
         const logIdMatch = urlPath.match(/\/log\/([a-z0-9]{8})/);
         
         if (logIdMatch) {
-            // Se já tem um ID na URL, redirecionar para o app principal
             const logId = logIdMatch[1];
             document.getElementById('logId').value = logId;
-            document.querySelector('.subtitle').textContent = `Acessando log: ${logId}`;
+            document.querySelector('.subtitle').textContent = `Accessing log: ${logId}`;
         }
     </script>
 </body>
