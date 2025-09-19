@@ -72,6 +72,8 @@
       .card{ padding:24px; }
     }
   </style>
+  <!-- Supabase JS v2 via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="container">
@@ -106,8 +108,8 @@
 
       <form id="accessLogForm">
         <div class="input-group">
-          <label for="logId">Existing Log ID</label>
-          <input type="text" id="logId" placeholder="e.g., abc123xyz" maxlength="20"/>
+          <label for="logId">Existing Log ID (slug)</label>
+          <input type="text" id="logId" placeholder="e.g., abc123xy" maxlength="20"/>
         </div>
         <button type="submit" class="btn secondary">Access Existing Log</button>
       </form>
@@ -124,18 +126,11 @@
   </div>
 
   <script>
-    // Placeholder API route base. We'll swap this when wiring to Supabase.
-    const API_BASE = window.location.hostname === 'localhost'
-      ? 'http://localhost:3000/api'
-      : 'https://your-supabase-functions-url';
+    // === Supabase client (public URL + anon key) ===
+    const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
 
-    // Simple unique ID generator (8 chars)
-    function generateLogId(){
-      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-      let result = '';
-      for (let i = 0; i < 8; i++) result += chars.charAt(Math.floor(Math.random()*chars.length));
-      return result;
-    }
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // DOM elements
     const createForm      = document.getElementById('createLogForm');
@@ -143,83 +138,12 @@
     const loadingMessage  = document.getElementById('loadingMessage');
     const errorMessage    = document.getElementById('errorMessage');
     const successMessage  = document.getElementById('successMessage');
-
-    // Create new log (simulated for now)
-    createForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const logName = document.getElementById('logName').value.trim();
-      const creatorName = document.getElementById('creatorName').value.trim();
-
-      if(!logName || !creatorName){
-        showError('Please fill out all fields.');
-        return;
-      }
-
-      showLoading(true);
-      hideMessages();
-
-      try{
-        const logId = generateLogId();
-
-        // Simulated creation (we’ll replace with Supabase later)
-        const logData = {
-          id: logId,
-          name: logName,
-          creator: creatorName,
-          created_at: new Date().toISOString(),
-          games: []
-        };
-
-        await new Promise(r => setTimeout(r, 1500)); // simulate API delay
-
-        // Real call (later):
-        // const response = await fetch(`${API_BASE}/logs`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(logData) });
-
-        showLoading(false);
-        showSuccess('Log created successfully! Redirecting…');
-
-        setTimeout(()=>{ window.location.href = `/log/${logId}`; }, 2000);
-      }catch(err){
-        showLoading(false);
-        showError('Error creating the log. Please try again.');
-        console.error('Error:', err);
-      }
-    });
-
-    // Access existing log (simulated for now)
-    accessForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const logId = document.getElementById('logId').value.trim();
-
-      if(!logId){
-        showError('Please enter a log ID.');
-        return;
-      }
-
-      showLoading(true);
-      hideMessages();
-
-      try{
-        await new Promise(r => setTimeout(r, 1000)); // simulate check
-
-        // Real check (later):
-        // const response = await fetch(`${API_BASE}/logs/${logId}`);
-        // if(!response.ok) throw new Error('Log not found');
-
-        showLoading(false);
-        showSuccess('Log found! Redirecting…');
-        setTimeout(()=>{ window.location.href = `/log/${logId}`; }, 1500);
-      }catch(err){
-        showLoading(false);
-        showError('Log not found. Please check the ID and try again.');
-        console.error('Error:', err);
-      }
-    });
+    const createBtn       = document.getElementById('createBtn');
 
     // Helpers
     function showLoading(show){
       loadingMessage.style.display = show ? 'block' : 'none';
-      document.getElementById('createBtn').disabled = show;
+      createBtn.disabled = show;
     }
     function showError(msg){
       errorMessage.textContent = msg;
@@ -234,13 +158,83 @@
       successMessage.style.display = 'none';
     }
 
-    // If URL already contains /log/<id>, reflect on the page
+    // Create new game log (INSERT into public.games and get slug back)
+    createForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const name = document.getElementById('logName').value.trim();
+      const creatorName = document.getElementById('creatorName').value.trim();
+
+      if(!name || !creatorName){
+        showError('Please fill out all fields.');
+        return;
+      }
+
+      showLoading(true);
+      hideMessages();
+
+      try{
+        const { data, error } = await supabase
+          .from('games')
+          .insert([ { name, creator_name: creatorName } ])
+          .select('slug')      // return the auto-generated slug
+          .single();
+
+        if(error) throw error;
+
+        showLoading(false);
+        showSuccess('Log created successfully! Redirecting…');
+
+        const slug = data.slug;
+        setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 1200);
+
+      }catch(err){
+        console.error(err);
+        showLoading(false);
+        showError('Error creating the log. Please try again.');
+      }
+    });
+
+    // Access existing log (SELECT by slug)
+    accessForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const slug = document.getElementById('logId').value.trim();
+
+      if(!slug){
+        showError('Please enter a log ID (slug).');
+        return;
+      }
+
+      showLoading(true);
+      hideMessages();
+
+      try{
+        const { data, error } = await supabase
+          .from('games')
+          .select('slug')
+          .eq('slug', slug)
+          .maybeSingle();
+
+        if(error) throw error;
+        if(!data){ throw new Error('Log not found'); }
+
+        showLoading(false);
+        showSuccess('Log found! Redirecting…');
+        setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 900);
+
+      }catch(err){
+        console.error(err);
+        showLoading(false);
+        showError('Log not found. Please check the ID and try again.');
+      }
+    });
+
+    // If URL already contains /log/<id>, reflect it on the page (cosmetic)
     const urlPath = window.location.pathname;
-    const logIdMatch = urlPath.match(/\/log\/([a-z0-9]{8})/);
-    if(logIdMatch){
-      const logId = logIdMatch[1];
-      document.getElementById('logId').value = logId;
-      document.querySelector('.subtitle').textContent = `Accessing log: ${logId}`;
+    const match = urlPath.match(/\/log\/([a-z0-9]{6,12})/i);
+    if(match){
+      const slug = match[1];
+      document.getElementById('logId').value = slug;
+      document.querySelector('.subtitle').textContent = `Accessing log: ${slug}`;
     }
   </script>
 </body>
