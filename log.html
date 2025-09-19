@@ -679,9 +679,13 @@ async function __loadFromSupabase(){
       .eq('type', 'ADD_GAME_ENTRY')
       .order('created_at', { ascending: true });
     if(error) throw error;
-    const arr = (data||[]).map(r=>r.payload||{}).filter(x=>x && x.id);
-    window.games = Array.isArray(arr) ? arr : [];
-    if(typeof window.render==='function') window.render();
+    const arr = (data || []).map(r => r.payload || {}).filter(x => x && x.id);
+// 🔧 atualiza as DUAS variáveis
+games = Array.isArray(arr) ? arr : [];
+window.games = games;
+
+if (typeof window.render === 'function') window.render();
+
     __flash('Loaded from Supabase', true);
   }catch(e){ console.warn(e); __flash('Could not load from Supabase'); }
 }
