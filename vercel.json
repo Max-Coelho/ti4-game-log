@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/log/:slug", "destination": "/index_solo_V10.html" }
+    { "source": "/log/:slug", "destination": "/app.html" }
   ]
 }
