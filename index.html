@@ -63,9 +63,30 @@
     .features{ list-style:none; padding:0; margin:24px 0; text-align:left; }
     .features li{ display:flex; align-items:center; margin:12px 0; color:var(--muted); }
     .features li::before{ content:'✓'; color:var(--ok); font-weight:bold; margin-right:12px; font-size:1.1rem; }
+
+    /* mensagens */
     .loading{ display:none; color:var(--accent); font-size:.9rem; margin-top:12px; }
     .error{ color:var(--danger); font-size:.9rem; margin-top:12px; display:none; }
     .success{ color:var(--ok); font-size:.9rem; margin-top:12px; display:none; }
+
+    /* rodapé */
+    .footer{
+      max-width:500px;
+      margin:24px auto 0; /* espaçamento abaixo do box principal */
+      text-align:center;
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .footer-title{
+      font-weight:700;
+      font-size:1.05rem; /* ligeiramente maior */
+      margin-bottom:6px;
+    }
+    .footer-text{
+      font-size:0.95rem;
+      white-space:pre-line; /* mantém quebras de linha do texto fornecido */
+    }
+
     @media (max-width:480px){
       .container{ padding:20px; }
       .logo{ font-size:2rem; }
@@ -84,21 +105,11 @@
     </p>
 
     <div class="card">
+      <!-- create log: sem campos visíveis, mantém o botão e funcionalidade -->
       <form id="createLogForm">
-        <div class="input-group">
-          <label for="logName">Your playgroup name</label>
-          <input type="text" id="logName" placeholder="e.g., Galactic Empire of Friends" required maxlength="50"/>
-        </div>
-
-        <div class="input-group">
-          <label for="creatorName">Your name</label>
-          <input type="text" id="creatorName" placeholder="e.g., John" required maxlength="30"/>
-        </div>
-
         <button type="submit" class="btn" id="createBtn">
           Create New Game Log
         </button>
-
         <div class="loading" id="loadingMessage">Creating your personalized log…</div>
         <div class="error" id="errorMessage"></div>
         <div class="success" id="successMessage"></div>
@@ -106,6 +117,7 @@
 
       <div class="divider"><span>or</span></div>
 
+      <!-- acesso a log existente permanece inalterado -->
       <form id="accessLogForm">
         <div class="input-group">
           <label for="logId">Existing Log ID (slug)</label>
@@ -122,6 +134,14 @@
         <li>Support for all factions</li>
         <li>Free to use</li>
       </ul>
+    </div>
+
+    <!-- Rodapé solicitado -->
+    <div class="footer" aria-label="Project disclaimer">
+      <div class="footer-title">Conquer the Galaxy ⭐</div>
+      <div class="footer-text">This project was made by someone who knows nothing about programming.
+It was made for fun. It offers no support and no guarantee that your data will be saved.
+Sorry.</div>
     </div>
   </div>
 
@@ -158,16 +178,21 @@
       successMessage.style.display = 'none';
     }
 
+    // Gera valores padrões já que removemos os campos visuais
+    function defaultPlaygroupName(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `Playgroup ${y}-${m}-${day}`;
+    }
+
     // Create new game log (INSERT into public.games and get slug back)
     createForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
-      const name = document.getElementById('logName').value.trim();
-      const creatorName = document.getElementById('creatorName').value.trim();
 
-      if(!name || !creatorName){
-        showError('Please fill out all fields.');
-        return;
-      }
+      const name = defaultPlaygroupName();       // valor padrão
+      const creatorName = 'Anonymous';           // valor padrão
 
       showLoading(true);
       hideMessages();
@@ -176,7 +201,7 @@
         const { data, error } = await supabase
           .from('games')
           .insert([ { name, creator_name: creatorName } ])
-          .select('slug')      // return the auto-generated slug
+          .select('slug')
           .single();
 
         if(error) throw error;
@@ -233,8 +258,10 @@
     const match = urlPath.match(/\/log\/([a-z0-9]{6,12})/i);
     if(match){
       const slug = match[1];
-      document.getElementById('logId').value = slug;
-      document.querySelector('.subtitle').textContent = `Accessing log: ${slug}`;
+      const subtitle = document.querySelector('.subtitle');
+      if (subtitle) subtitle.textContent = `Accessing log: ${slug}`;
+      const logIdField = document.getElementById('logId');
+      if (logIdField) logIdField.value = slug;
     }
   </script>
 </body>
