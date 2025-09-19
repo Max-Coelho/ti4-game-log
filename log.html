@@ -657,11 +657,13 @@ const supabase = window.supabase?.createClient
 
 const __slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1] || null;
 const __flash = (msg, ok=false)=>{
-  let el = document.getElementById('flash');
-  if(!el){ el=document.createElement('div'); el.id='flash'; el.style.cssText='margin:8px 0;color:#93a0ad'; document.body.prepend(el); }
-  el.textContent = msg; el.style.color = ok ? '#10b981' : '#ef4444';
-  setTimeout(()=>{ el.textContent=''; }, 1800);
+  const el = document.getElementById('supabaseMsg');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.color = ok ? '#10b981' : '#ef4444';
+  setTimeout(()=>{ el.textContent=''; el.style.color='#93a0ad'; }, 1500);
 };
+
 
 async function __getGameIdBySlug(){
   const { data, error } = await supabase.from('games').select('id').eq('slug', __slug).maybeSingle();
