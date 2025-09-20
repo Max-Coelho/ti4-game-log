@@ -282,23 +282,66 @@ Sorry. = )</div>
     // Load top faction stats
     async function loadTopFactionStats() {
       try {
+        console.log('Loading faction stats...');
+        
+        // First, let's test basic connectivity
+        const { data: testData, error: testError } = await supabase
+          .from('games')
+          .select('*')
+          .limit(1);
+
+        console.log('Test query result:', { testData, testError });
+
+        if (testError) {
+          throw new Error(`Database connection error: ${testError.message}`);
+        }
+
+        // Query to get all game_players data to debug
+        const { data: allPlayersData, error: playersError } = await supabase
+          .from('game_players')
+          .select('*')
+          .limit(10);
+
+        console.log('All players data sample:', { allPlayersData, playersError });
+
         // Query to get faction win counts
         const { data: winData, error: winError } = await supabase
           .from('game_players')
-          .select('faction')
+          .select('faction, winner')
           .eq('winner', true);
 
-        if (winError) throw winError;
+        console.log('Win data:', { winData, winError });
+
+        if (winError) {
+          throw new Error(`Win data query error: ${winError.message}`);
+        }
 
         // Query to get total games count
         const { data: gameData, error: gameError } = await supabase
           .from('games')
-          .select('id', { count: 'exact' });
+          .select('id');
 
-        if (gameError) throw gameError;
+        console.log('Game data:', { gameData, gameError });
+
+        if (gameError) {
+          throw new Error(`Game data query error: ${gameError.message}`);
+        }
 
         if (!winData || winData.length === 0) {
-          factionStats.innerHTML = '<div class="stats-error">No game data available yet.<br/>Be the first to log a game!</div>';
+          // Let's check if we have any players at all
+          const { data: anyPlayers } = await supabase
+            .from('game_players')
+            .select('faction')
+            .limit(5);
+          
+          console.log('Any players check:', anyPlayers);
+          
+          factionStats.innerHTML = `
+            <div class="stats-error">
+              No winning data found yet.<br/>
+              Total games in database: ${gameData ? gameData.length : 0}<br/>
+              ${anyPlayers && anyPlayers.length > 0 ? 'Players exist but no winners marked.' : 'No player data found.'}
+            </div>`;
           return;
         }
 
@@ -310,6 +353,8 @@ Sorry. = )</div>
             factionWins[faction] = (factionWins[faction] || 0) + 1;
           }
         });
+
+        console.log('Faction wins:', factionWins);
 
         // Find top faction
         let topFaction = null;
@@ -333,6 +378,10 @@ Sorry. = )</div>
               this.style.display = 'none';
               this.parentElement.innerHTML = `<div style="font-size: 24px; color: var(--accent);">${topFaction.charAt(0)}</div>`;
             };
+          } else {
+            // No image mapping found
+            factionImage.style.display = 'none';
+            factionImage.parentElement.innerHTML = `<div style="font-size: 24px; color: var(--accent);">${topFaction.charAt(0)}</div>`;
           }
 
           // Display stats
@@ -341,11 +390,17 @@ Sorry. = )</div>
             <strong>Current top winning faction across all games</strong><br/>
             <span style="color: var(--accent); font-weight: 600;">${topFaction}</span> - ${maxWins} wins over ${totalGames} games
           `;
+        } else {
+          factionStats.innerHTML = '<div class="stats-error">No faction data could be processed.</div>';
         }
 
       } catch (error) {
         console.error('Error loading faction stats:', error);
-        factionStats.innerHTML = '<div class="stats-error">Unable to load stats at this time.</div>';
+        factionStats.innerHTML = `
+          <div class="stats-error">
+            Unable to load stats: ${error.message}<br/>
+            <small>Check browser console for details.</small>
+          </div>`;
       }
     }
 
