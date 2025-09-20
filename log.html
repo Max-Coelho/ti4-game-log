@@ -156,7 +156,12 @@
 <body>
   <div class="container">
     <header>
-      <div><div class="title">Twilight Imperium IV — Game Log</div></div>
+      <div>
+  <div class="title">
+    Twilight Imperium IV — Game Log
+    <span id="slugDisplay" style="color:#A2C94D;margin-left:6px"></span>
+  </div>
+</div>
       <div class="tools">
         <button class="btn primary" id="exportBtn" title="Export your data as JSON">Export JSON</button>
         <label class="btn ghost" for="importInput" title="Import a previously exported JSON">
@@ -188,10 +193,13 @@
 
           <div id="players"></div>
 
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-            <button class="btn" type="button" id="clearForm">Clear</button>
-            <button class="btn primary" type="submit">Save Game</button>
-          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align-items:center">
+  <span id="supabaseMsg" style="font-size:12px;color:#93a0ad"></span>
+  <button class="btn" type="button" id="clearForm">Clear</button>
+  <button class="btn primary" type="submit">Save Game</button>
+</div>
+
+
         </form>
       </section>
 
@@ -253,9 +261,9 @@
     <footer>
       <div>Conquer the Galaxy ⭐</div>
       <div class="footer-note">
-        This project was made by someone who knows nothing about programming.<br>
-        It was made for fun. It offers no support and no guarantee that your data will be saved.<br>
-        Sorry.
+        This project was made by a non-coder.
+There is no support and your data may vanish at some point.
+Sorry. = )
       </div>
     </footer>
   </div>
@@ -654,12 +662,18 @@ const supabase = window.supabase?.createClient
   : null;
 
 const __slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1] || null;
+  if (__slug) {
+  const el = document.getElementById('slugDisplay');
+  if (el) el.textContent = '— ' + __slug;
+}
 const __flash = (msg, ok=false)=>{
-  let el = document.getElementById('flash');
-  if(!el){ el=document.createElement('div'); el.id='flash'; el.style.cssText='margin:8px 0;color:#93a0ad'; document.body.prepend(el); }
-  el.textContent = msg; el.style.color = ok ? '#10b981' : '#ef4444';
-  setTimeout(()=>{ el.textContent=''; }, 1800);
+  const el = document.getElementById('supabaseMsg');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.color = ok ? '#10b981' : '#ef4444';
+  setTimeout(()=>{ el.textContent=''; el.style.color='#93a0ad'; }, 1500);
 };
+
 
 async function __getGameIdBySlug(){
   const { data, error } = await supabase.from('games').select('id').eq('slug', __slug).maybeSingle();
