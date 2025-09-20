@@ -328,19 +328,64 @@ Sorry. = )</div>
         }
 
         if (!winData || winData.length === 0) {
-          // Let's check if we have any players at all
-          const { data: anyPlayers } = await supabase
+          // No winners found, let's show most played faction instead
+          const { data: allPlayersData } = await supabase
             .from('game_players')
-            .select('faction')
-            .limit(5);
+            .select('faction');
           
-          console.log('Any players check:', anyPlayers);
+          console.log('All players for most played:', allPlayersData);
+          
+          if (allPlayersData && allPlayersData.length > 0) {
+            // Count games by faction instead of wins
+            const factionGames = {};
+            allPlayersData.forEach(row => {
+              const faction = row.faction;
+              if (faction) {
+                factionGames[faction] = (factionGames[faction] || 0) + 1;
+              }
+            });
+
+            // Find most played faction
+            let topFaction = null;
+            let maxGames = 0;
+            for (const [faction, games] of Object.entries(factionGames)) {
+              if (games > maxGames) {
+                maxGames = games;
+                topFaction = faction;
+              }
+            }
+
+            if (topFaction) {
+              // Display faction image
+              const imageName = factionImageMap[topFaction];
+              if (imageName) {
+                factionImage.src = `/Faction_Icons/${imageName}`;
+                factionImage.alt = topFaction;
+                factionImage.style.display = 'block';
+                factionImage.onerror = function() {
+                  this.style.display = 'none';
+                  this.parentElement.innerHTML = `<div style="font-size: 24px; color: var(--accent);">${topFaction.charAt(0)}</div>`;
+                };
+              } else {
+                factionImage.style.display = 'none';
+                factionImage.parentElement.innerHTML = `<div style="font-size: 24px; color: var(--accent);">${topFaction.charAt(0)}</div>`;
+              }
+
+              const totalGames = gameData ? gameData.length : 0;
+              factionStats.innerHTML = `
+                <strong>Most played faction across all games</strong><br/>
+                <span style="color: var(--accent); font-weight: 600;">${topFaction}</span> - ${maxGames} times played over ${totalGames} games<br/>
+                <small style="color: var(--muted);">*No winners marked yet - showing most played instead</small>
+              `;
+              return;
+            }
+          }
           
           factionStats.innerHTML = `
             <div class="stats-error">
               No winning data found yet.<br/>
               Total games in database: ${gameData ? gameData.length : 0}<br/>
-              ${anyPlayers && anyPlayers.length > 0 ? 'Players exist but no winners marked.' : 'No player data found.'}
+              Please mark winners in your games to see faction statistics.
             </div>`;
           return;
         }
