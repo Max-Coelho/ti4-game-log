@@ -4,7 +4,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TI4 / PoK â€" Game Log (Dark)</title>
+  <title>TI4 / PoK â€” Game Log (Dark)</title>
   <style>
     :root{
       --bg:#0b0f14; --panel:#0f1720; --panel-2:#0c131c; --text:#e6edf3; --muted:#93a0ad;
@@ -107,7 +107,7 @@
     .dialog header .close{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer}
     .dialog .content{padding:14px}
 
-    /* ===== Winners modal (layout V6) â€" INALTERADO ===== */
+    /* ===== Winners modal (layout V6) â€” INALTERADO ===== */
     #modalChart .wrow{
       display:grid;grid-template-columns:10ch 160px 210px 1fr;align-items:center;column-gap:24px;
       padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)
@@ -124,9 +124,9 @@
       #modalChart .track{width:140px}
     }
 
-    /* ===== Factions modal â€" nome em 22ch (Mahact Gene-Sorcerers) ===== */
-    /* Colunas: Ãcone (24px) | Nome (22ch) | Barra (210px) | MÃ©tricas (1fr)
-       EspaÃ§amento entre colunas = 24px, igual para Nomeâ†'Barra e Barraâ†'MÃ©tricas. */
+    /* ===== Factions modal â€” nome em 22ch (Mahact Gene-Sorcerers) ===== */
+    /* Colunas: Ãcone (24px) | Nome (22ch) | Barra (210px) | MÃ©tricas (1fr)
+       EspaÃ§amento entre colunas = 24px, igual para Nomeâ†’Barra e Barraâ†’MÃ©tricas. */
     #modalChart.factions .frow{
       display:grid;
       grid-template-columns:24px 22ch 210px 1fr;
@@ -158,7 +158,7 @@
     <header>
       <div>
   <div class="title">
-    Twilight Imperium IV â€" Game Log
+    Twilight Imperium IV â€” Game Log
     <span id="slugDisplay" style="color:#A2C94D;margin-left:6px"></span>
   </div>
 </div>
@@ -259,7 +259,7 @@
     </section>
 
     <footer>
-      <div>Conquer the Galaxy â­</div>
+      <div>Conquer the Galaxy â­</div>
       <div class="footer-note">
         This project was made by a non-coder.
 There is no support and your data may vanish at some point.
@@ -271,7 +271,7 @@ Sorry. = )
   <!-- Modal -->
   <div id="modal" aria-hidden="true">
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <header><strong id="modalTitle">Top Winners â€" Stats</strong><button class="close" id="modalClose" aria-label="Close">âœ•</button></header>
+      <header><strong id="modalTitle">Top Winners â€” Stats</strong><button class="close" id="modalClose" aria-label="Close">âœ•</button></header>
       <div class="content"><div id="modalChart" class="barchart"></div></div>
     </div>
   </div>
@@ -351,7 +351,7 @@ Sorry. = )
     const applyFactionIconToSelect=(sel)=>{const url=getFactionIcon(sel.value); sel.style.backgroundImage=url?`url('${url}')`:'none'};
 
     const pad2=n=>String(n).padStart(2,'0');
-    const minutesToHHMM=(mins)=>{ if(!Number.isFinite(mins)) return 'â€"'; const h=Math.floor(mins/60), m=Math.round(mins%60); return `${pad2(h)}h ${pad2(m)}m`; };
+    const minutesToHHMM=(mins)=>{ if(!Number.isFinite(mins)) return 'â€”'; const h=Math.floor(mins/60), m=Math.round(mins%60); return `${pad2(h)}h ${pad2(m)}m`; };
     const HHMMtoMinutes=(hhmm)=>{ const [h,m]=String(hhmm||'').split(':').map(Number); if(Number.isFinite(h)&&Number.isFinite(m)) return h*60+m; return NaN; };
 
     gameDate.valueAsDate=new Date();
@@ -369,13 +369,13 @@ Sorry. = )
       del.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count<=MIN_PLAYERS){flashRed(del);return}row.remove();updateNamesList();updateFactionOptions()};
       row.append(name,faction,vp,del);playersWrap.appendChild(row);updateFactionOptions();
     }
-    function updateNamesList(){const dl=document.getElementById('namesList');if(!dl)return;const names=new Set([...getAllPlayerNames(),...$('.player-row input[type=text]',playersWrap).map(i=>i.value.trim()).filter(Boolean)]);dl.innerHTML=Array.from(names).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}"></option>`).join('')}
-    function getSelectedFactions(){return $('.player-row select',playersWrap).filter(s=>!s.hasAttribute('data-vp')).map(s=>s.value).filter(v=>v&&v!=='')}
-    function updateFactionOptions(){const chosen=new Set(getSelectedFactions());$('.player-row select',playersWrap).forEach(sel=>{if(sel.hasAttribute('data-vp'))return;$('option',sel).forEach(opt=>{if(!opt.value)return;opt.disabled=chosen.has(opt.value)&&sel.value!==opt.value})})}
-    function ensureMinPlayers(min=MIN_PLAYERS){while($('.player-row',playersWrap).length<min){createPlayerRow()}} ensureMinPlayers(MIN_PLAYERS);
-    addPlayerBtn.onclick=()=>{const count=$('.player-row',playersWrap).length;if(count>=MAX_PLAYERS){flashRed(addPlayerBtn);return}createPlayerRow();updateNamesList()};
+    function updateNamesList(){const dl=document.getElementById('namesList');if(!dl)return;const names=new Set([...getAllPlayerNames(),...$$('.player-row input[type=text]',playersWrap).map(i=>i.value.trim()).filter(Boolean)]);dl.innerHTML=Array.from(names).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}"></option>`).join('')}
+    function getSelectedFactions(){return $$('.player-row select',playersWrap).filter(s=>!s.hasAttribute('data-vp')).map(s=>s.value).filter(v=>v&&v!=='')}
+    function updateFactionOptions(){const chosen=new Set(getSelectedFactions());$$('.player-row select',playersWrap).forEach(sel=>{if(sel.hasAttribute('data-vp'))return;$$('option',sel).forEach(opt=>{if(!opt.value)return;opt.disabled=chosen.has(opt.value)&&sel.value!==opt.value})})}
+    function ensureMinPlayers(min=MIN_PLAYERS){while($$('.player-row',playersWrap).length<min){createPlayerRow()}} ensureMinPlayers(MIN_PLAYERS);
+    addPlayerBtn.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count>=MAX_PLAYERS){flashRed(addPlayerBtn);return}createPlayerRow();updateNamesList()};
     prefill6Btn.onclick=()=>{playersWrap.innerHTML='';for(let i=0;i<6;i++)createPlayerRow();updateNamesList();updateFactionOptions()};
-    clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updateNamesList();$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
+    clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updateNamesList();$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');$$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
 
     function validateUniqueFactions(players){const s=players.map(p=>p.faction).filter(Boolean);return new Set(s).size===s.length}
     function computePodiums(players){const scores=Array.from(new Set(players.map(p=>p.vp))).sort((a,b)=>b-a);const group=(score)=>players.map((p,i)=>p.vp===score?i:-1).filter(i=>i!==-1);return{scores,first:scores[0]!==undefined?group(scores[0]):[],second:scores[1]!==undefined?group(scores[1]):[],third:scores[2]!==undefined?group(scores[2]):[]}}
@@ -405,7 +405,7 @@ Sorry. = )
       const date=gameDate.value||new Date().toISOString().slice(0,10);
       const durMinutes=HHMMtoMinutes(gameDurationTime.value);
       if(!Number.isFinite(durMinutes) || durMinutes<=0){ alert('Enter a valid duration (HH:MM).'); return; }
-      const rows=$('.player-row',playersWrap);
+      const rows=$$('.player-row',playersWrap);
       const players=rows.map(r=>{
         const [nameEl,factionEl,vpEl]=[$('input[type=text]',r),$('select:not([data-vp])',r),$('select[data-vp]',r)];
         return {name:(nameEl.value||'').trim(),faction:factionEl.value,vp:Number(vpEl.value||0)};
@@ -417,29 +417,24 @@ Sorry. = )
       const maxVP=Math.max(...players.map(p=>p.vp||0));
       const winnerIdx=players.reduce((arr,p,idx)=>{if((p.vp||0)===maxVP)arr.push(idx);return arr},[]);
       const id=(crypto?.randomUUID?.()||('g_'+Date.now()+Math.random().toString(16).slice(2)));
-      games.push({id,date,durationMinutes:durMinutes,players,winners:winnerIdx}); 
-      
-      // 🔧 NEW: Sync winners to Supabase after saving locally
-      syncWinnersToSupabase({id,date,durationMinutes:durMinutes,players,winners:winnerIdx});
-      
-      window.saveGames(games);
+      games.push({id,date,durationMinutes:durMinutes,players,winners:winnerIdx}); window.saveGames(games);
 
       render();
-      $('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');
-      $('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');
+      $$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');
+      $$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');
       updateNamesList(); updateFactionOptions();
     });
 
     function renderKPIs(s){
       statsGrid.innerHTML='';
       const kpi=(label,value,sub='')=>{ const el=document.createElement('div'); el.className='stat';
-        el.innerHTML=`<div class="muted">${label}</div><div class="kpi">${value}</div>${sub?`<div class="muted" style="font-size:.8rem">${sub}</div>`:''}`;
+        el.innerHTML=`<div class="muted">${label}</div><div class="kpi">${value}</div>${sub?`<div class=\\"muted\\" style=\\"font-size:.8rem\\">${sub}</div>`:''}`;
         statsGrid.appendChild(el);
       };
       kpi('Games Logged',s.totalGames);
       kpi('Unique Players',s.uniquePlayers);
       kpi('Avg Players / Game',s.avgPlayersPerGame.toFixed(2));
-      kpi('Avg Game Duration', s.avgDurationMinutes!=null ? minutesToHHMM(s.avgDurationMinutes) : 'â€"');
+      kpi('Avg Game Duration', s.avgDurationMinutes!=null ? minutesToHHMM(s.avgDurationMinutes) : 'â€”');
     }
 
     function renderBarChart(container, rows, labelKey, valueKey, maxItems=10){
@@ -457,7 +452,7 @@ Sorry. = )
       }
     }
 
-    /* ===== Top Winners (na seção Stats & Charts) â€" sem barras ===== */
+    /* ===== Top Winners (na seÃ§Ã£o Stats & Charts) â€” sem barras ===== */
     function renderWinnersChart(container,winnersRank){
       container.innerHTML = '';
       if(!winnersRank.length){ container.innerHTML = '<div class="muted">No data yet.</div>'; return }
@@ -477,7 +472,7 @@ Sorry. = )
       });
     }
 
-    function formatWinnersWithFactions(g){return g.winners.map(i=>{const p=g.players[i];return `${p.name} â€" ${p.faction}`})}
+    function formatWinnersWithFactions(g){return g.winners.map(i=>{const p=g.players[i];return `${p.name} â€“ ${p.faction}`})}
     function getLongestShortestDurations(){
       const ds=games.map(g=>g.durationMinutes).filter(d=>Number.isFinite(d));
       if(!ds.length) return {max:null,min:null};
@@ -506,13 +501,13 @@ Sorry. = )
         const sum=document.createElement('details');
         const podium=computePodiums(g.players);
         const makeBadge=(icon,arr,vp)=>arr.length?`<span class="badge" title="${icon}">${icon} ${arr.map(i=>g.players[i].name).join(', ')} (${vp} VP)</span>`:'';
-        const firstBadge=g.winners.length?`<span class="badge" title="Winner(s)">ðŸ† ${winners.join(', ')}</span>`:'';
+        const firstBadge=g.winners.length?`<span class="badge" title="Winner(s)">ðŸ† ${winners.join(', ')}</span>`:'';
         const secondBadge=makeBadge('ðŸ¥ˆ',podium.second,podium.scores[1]);
         const thirdBadge =makeBadge('ðŸ¥‰',podium.third ,podium.scores[2]);
-        const pcount=`<span class="badge" title="Players">ðŸ'¥ ${g.players.length}</span>`;
-        const d=`<span class="badge">ðŸ"… ${g.date}</span>`;
+        const pcount=`<span class="badge" title="Players">ðŸ‘¥ ${g.players.length}</span>`;
+        const d=`<span class="badge">ðŸ“… ${g.date}</span>`;
         const durMins = Number(g.durationMinutes);
-        const dur=`<span class="badge" title="Duration">â± ${minutesToHHMM(durMins)}</span>`;
+        const dur=`<span class="badge" title="Duration">â± ${minutesToHHMM(durMins)}</span>`;
         const longestTag = (longest!=null && durMins===longest) ? `<span class="badge tag-longest">Longest Game</span>` : '';
         const shortestTag= (shortest!=null && durMins===shortest)? `<span class="badge tag-shortest">Shortest Game</span>` : '';
         sum.innerHTML = `<summary><div class="left">${firstBadge} ${secondBadge} ${thirdBadge} ${pcount} ${d} ${dur} ${longestTag} ${shortestTag}</div><div style="display:flex;gap:8px">
@@ -530,7 +525,7 @@ Sorry. = )
       }
       gamesList.appendChild(frag);
 
-      $('button[data-del]').forEach(btn=>{ btn.onclick = ()=>{ const id=btn.getAttribute('data-del'); games = games.filter(g=>g.id!==id); window.saveGames(games); render(); } });
+      $$('button[data-del]').forEach(btn=>{ btn.onclick = ()=>{ const id=btn.getAttribute('data-del'); games = games.filter(g=>g.id!==id); window.saveGames(games); render(); } });
     }
 
     function render(){
@@ -546,7 +541,7 @@ Sorry. = )
 
     /* ===== Modal: Top Winners (mantido) ===== */
     function openWinnersModal(){
-      $('#modalTitle').textContent='Top Winners â€" Stats';
+      $('#modalTitle').textContent='Top Winners â€” Stats';
       modalChart.innerHTML='';
       const s=computeStats(); const winFac=computeWinningFactionsByPlayer();
       const rows=s.winnersRank.map(r=>({name:r.name,wins:r.wins,games:r.games,winRate:(r.winRate*100)||0,avgVP:r.avgVP||0}));
@@ -564,9 +559,9 @@ Sorry. = )
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
     }
 
-    /* ===== Modal: Top Factions (nome 22ch, barra logo após o nome) ===== */
+    /* ===== Modal: Top Factions (nome 22ch, barra logo apÃ³s o nome) ===== */
     function openFactionsModal(){
-      $('#modalTitle').textContent='Top Factions â€" Stats';
+      $('#modalTitle').textContent='Top Factions â€” Stats';
       modalChart.innerHTML='';
       modalChart.classList.add('factions');
 
@@ -600,7 +595,7 @@ Sorry. = )
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
     }
 
-    // Botões View more
+    // BotÃµes View more
     moreStatsBtn?.addEventListener('click', ()=>{ if(games.length) openWinnersModal(); });
     factionStatsBtn?.addEventListener('click', ()=>{ if(games.length) openFactionsModal(); });
 
@@ -659,7 +654,7 @@ Sorry. = )
   </script>
 
 <script>
-/* ======= Supabase sync (não altera layout) ======= */
+/* ======= Supabase sync (nÃ£o altera layout) ======= */
 const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
 const supabase = window.supabase?.createClient
@@ -669,7 +664,7 @@ const supabase = window.supabase?.createClient
 const __slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1] || null;
   if (__slug) {
   const el = document.getElementById('slugDisplay');
-  if (el) el.textContent = 'â€" ' + __slug;
+  if (el) el.textContent = 'â€” ' + __slug;
 }
 const __flash = (msg, ok=false)=>{
   const el = document.getElementById('supabaseMsg');
@@ -699,7 +694,7 @@ async function __loadFromSupabase(){
       .order('created_at', { ascending: true });
     if(error) throw error;
     const arr = (data || []).map(r => r.payload || {}).filter(x => x && x.id);
-// 🔧 atualiza as DUAS variáveis
+// ðŸ”§ atualiza as DUAS variÃ¡veis
 games = Array.isArray(arr) ? arr : [];
 window.games = games;
 
@@ -715,7 +710,7 @@ if (typeof window.render === 'function') window.render();
   const __origSave = window.saveGames || function(){};
   let __syncTimer = null;
   window.saveGames = function(arr){
-    // se quiser manter cópia local também, descomente:
+    // se quiser manter cÃ³pia local tambÃ©m, descomente:
     // __origSave(arr);
 
     clearTimeout(__syncTimer);
@@ -741,49 +736,13 @@ if (typeof window.render === 'function') window.render();
   };
 })();
 
-// 🔧 NEW: Function to sync winners to game_players table
-async function syncWinnersToSupabase(game) {
-  if (!supabase || !__slug) return;
-  
-  try {
-    const gameId = await __getGameIdBySlug();
-    
-    // Insert all players into game_players table
-    const playerRows = game.players.map((player, index) => ({
-      game_id: gameId,
-      player_id: null, // We're not using a players table, so null
-      faction: player.faction,
-      score: player.vp || 0,
-      winner: game.winners.includes(index), // Mark as winner if in winners array
-      meta: {
-        playerName: player.name,
-        gameDate: game.date,
-        gameDuration: game.durationMinutes
-      }
-    }));
-    
-    const { error } = await supabase
-      .from('game_players')
-      .insert(playerRows);
-    
-    if (error) {
-      console.error('Error syncing winners to Supabase:', error);
-      __flash('Failed to sync winners', false);
-    } else {
-      console.log('Winners synced successfully to Supabase');
-      __flash('Winners synced!', true);
-    }
-    
-  } catch (e) {
-    console.error('Error in syncWinnersToSupabase:', e);
-    __flash('Winner sync failed', false);
-  }
-}
-
 // realtime (se marcado em Publications)
 (function __subscribeRealtime(){
   if(!supabase || !__slug) return;
   supabase.channel('rt:log')
+    .on('postgres_changes', { event:'*', schema:'public', table:'events' }, (payload)=>{
+      if(payload?.new?.type === 'ADD_GAME_ENTRY'){ __loadFromSupabase(); }
+    })
     .subscribe();
 })();
 
