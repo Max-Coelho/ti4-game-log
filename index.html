@@ -11,7 +11,7 @@
       --panel-2: #0c131c;
       --text: #e6edf3;
       --muted: #93a0ad;
-      --muted-2: #7a8896; /* rodapé mais escuro */
+      --muted-2: #7a8896; /* rodapé um pouco mais escuro */
       --border: #1e2937;
       --accent: #60a5fa;
       --accent-2: #22d3ee;
@@ -70,6 +70,7 @@
       border-color:#475569; transform:translateY(-1px);
     }
     .btn.secondary{ background:transparent; border-color:var(--border); }
+    /* hover do secondary igual ao do primary */
     .btn.secondary:hover{
       background:linear-gradient(90deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
       border-color:#475569; transform:translateY(-1px);
@@ -87,6 +88,7 @@
     .divider::before, .divider::after{ content:''; flex:1; height:1px; background:var(--border); }
     .divider span{ padding:0 16px; text-transform:uppercase; letter-spacing:.06em; font-size:.8rem; }
 
+    /* features em 2 colunas */
     .features{ list-style:none; padding:0; margin:0; text-align:left; }
     .features.two-col{
       display:grid; grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -96,7 +98,6 @@
       display:flex; align-items:center; color:var(--muted); margin:8px 0;
     }
     .features li::before{ content:'✓'; color:var(--ok); font-weight:bold; margin-right:12px; font-size:1.05rem; }
-
     @media (max-width:480px){
       .features.two-col{ grid-template-columns: 1fr; }
     }
@@ -108,20 +109,20 @@
     /* rodapé */
     .footer{
       max-width:500px;
-      margin:32px auto 0;
+      margin:32px auto 0; /* espaço entre o card e o rodapé */
       text-align:center;
       color:var(--muted-2);
       line-height:1.5;
-      background: transparent;
+      background: transparent; /* mantém o gradiente geral */
     }
     .footer-title{
       font-weight:700;
-      font-size:0.95rem;
+      font-size:0.95rem; /* ligeiramente maior que o texto abaixo */
       margin-bottom:4px;
     }
     .footer-text{
-      font-size:0.85rem;
-      white-space:pre-line;
+      font-size:0.85rem; /* um pouco menor */
+      white-space:pre-line; /* mantém quebras de linha do texto fornecido */
     }
 
     @media (max-width:480px){
@@ -148,7 +149,7 @@
     </div>
 
     <div class="card">
-      <!-- BLOCO 1: ações -->
+      <!-- BLOCO 1: ações (criar e acessar logs) -->
       <section class="block" id="actions">
         <form id="createLogForm">
           <button type="submit" class="btn" id="createBtn">Create New Game Log</button>
@@ -168,7 +169,7 @@
         </form>
       </section>
 
-      <!-- BLOCO 2: destaques -->
+      <!-- BLOCO 2: destaques (features) -->
       <section class="block" id="features">
         <div class="divider"><span>features</span></div>
         <ul class="features two-col">
@@ -185,9 +186,8 @@
     <!-- Rodapé -->
     <div class="footer" aria-label="Project disclaimer">
       <div class="footer-title">Conquer the Galaxy ⭐</div>
-      <div class="footer-text">This project was made by a non-coder.
-There is no support and your data may vanish at some point.
-Sorry. = )</div>
+      <div class="footer-text">Made for fun by a non-coder.
+No support and no save guarantees. Sorry. :)</div>
     </div>
   </div>
 
@@ -197,34 +197,34 @@ Sorry. = )</div>
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ===== ICON MAP / normalização =====
+    // ===== Pasta dos ícones + normalização dos nomes =====
     const ICON_BASE = 'Faction_Icons/'; // ajuste se sua pasta tiver outro caminho
     const aliasMap = {
-      // base
-      'Arborec':'Arborec', 'The Arborec':'Arborec',
-      'Barony of Letnev':'Letnev', 'The Barony of Letnev':'Letnev',
-      'Clan of Saar':'Saar','The Clan of Saar':'Saar',
-      'Embers of Muaat':'Muaat','The Embers of Muaat':'Muaat',
-      'Emirates of Hacan':'Hacan','The Emirates of Hacan':'Hacan',
-      'Federation of Sol':'Sol','The Federation of Sol':'Sol',
-      'Ghosts of Creuss':'Creuss','The Ghosts of Creuss':'Creuss',
-      'L1Z1X Mindnet':'L1Z1X','The L1Z1X Mindnet':'L1Z1X',
-      'Mentak Coalition':'Mentak','The Mentak Coalition':'Mentak',
-      'Naalu Collective':'Naalu','The Naalu Collective':'Naalu',
-      'Nekro Virus':'Nekro','The Nekro Virus':'Nekro',
-      'Sardakk N’orr':'Sardakk','Sardakk Norr':'Sardakk',
-      'Universities of Jol-Nar':'JolNar','The Universities of Jol-Nar':'JolNar',
+      // Base set
+      'Arborec':'Arborec',
+      'Barony of Letnev':'Letnev','The Barony of Letnev':'Letnev','Letnev':'Letnev',
+      'Clan of Saar':'Saar','The Clan of Saar':'Saar','Saar':'Saar',
+      'Embers of Muaat':'Muaat','The Embers of Muaat':'Muaat','Muaat':'Muaat',
+      'Emirates of Hacan':'Hacan','The Emirates of Hacan':'Hacan','Hacan':'Hacan',
+      'Federation of Sol':'Sol','The Federation of Sol':'Sol','Sol':'Sol',
+      'Ghosts of Creuss':'Creuss','The Ghosts of Creuss':'Creuss','Creuss':'Creuss',
+      'L1Z1X Mindnet':'L1Z1X','The L1Z1X Mindnet':'L1Z1X','L1Z1X':'L1Z1X',
+      'Mentak Coalition':'Mentak','The Mentak Coalition':'Mentak','Mentak':'Mentak',
+      'Naalu Collective':'Naalu','The Naalu Collective':'Naalu','Naalu':'Naalu',
+      'Nekro Virus':'Nekro','The Nekro Virus':'Nekro','Nekro':'Nekro',
+      'Sardakk N’orr':'Sardakk','Sardakk Norr':'Sardakk','Sardakk':'Sardakk',
+      'Universities of Jol-Nar':'JolNar','The Universities of Jol-Nar':'JolNar','Jol-Nar':'JolNar','JolNar':'JolNar',
       'Winnu':'Winnu','The Winnu':'Winnu',
-      'Xxcha Kingdom':'Xxcha','The Xxcha Kingdom':'Xxcha',
-      'Yin Brotherhood':'Yin','The Yin Brotherhood':'Yin',
-      'Yssaril Tribes':'Yssaril','The Yssaril Tribes':'Yssaril',
+      'Xxcha Kingdom':'Xxcha','The Xxcha Kingdom':'Xxcha','Xxcha':'Xxcha',
+      'Yin Brotherhood':'Yin','The Yin Brotherhood':'Yin','Yin':'Yin',
+      'Yssaril Tribes':'Yssaril','The Yssaril Tribes':'Yssaril','Yssaril':'Yssaril',
       // PoK
-      'Argent Flight':'Argent',
+      'Argent Flight':'Argent','Argent':'Argent',
       'Empyrean':'Empyrean',
-      'Mahact Gene-Sorcerers':'Mahact','The Mahact Gene-Sorcerers':'Mahact',
-      'Naaz-Rokha Alliance':'NaazRokha',
-      'Titans of Ul':'Titans','The Titans of Ul':'Titans',
-      "Vuil'raith Cabal":'Vuilraith',
+      'Mahact Gene-Sorcerers':'Mahact','The Mahact Gene-Sorcerers':'Mahact','Mahact':'Mahact',
+      'Naaz-Rokha Alliance':'NaazRokha','Naaz-Rokha':'NaazRokha','NaazRokha':'NaazRokha',
+      'Titans of Ul':'Titans','The Titans of Ul':'Titans','Titans':'Titans',
+      "Vuil'raith Cabal":'Vuilraith',"The Vuil'raith Cabal":'Vuilraith','Vuilraith':'Vuilraith',
       // Keleres
       'Council Keleres':'Keleres','Keleres':'Keleres'
     };
@@ -235,56 +235,42 @@ Sorry. = )</div>
     }
     function factionIconPath(name){
       const key = canonFactionName(name);
-      if(!key) return null;
-      return ICON_BASE + key + '.png';
+      return key ? ICON_BASE + key + '.png' : null;
     }
 
-    // ===== Top winning faction (global) =====
+    // ===== Top winning faction via game_players (winner = true) =====
     async function fetchTopFactionGlobal(){
-      // Tenta várias estruturas comuns
-      const candidates = [
-        { table:'matches', col:'winner_faction' },
-        { table:'match', col:'winner_faction' },
-        { table:'match_results', col:'faction', filters:[['is_winner', true]] },
-        { table:'results', col:'faction', filters:[['is_winner', true], ['result','win']] },
-        { table:'game_results', col:'faction', filters:[['is_winner', true]] },
-        { table:'games', col:'winner_faction' } // fallback fraco
-      ];
+      const pageSize = 2000; // paginação defensiva
+      let from = 0;
+      const counts = {};
 
-      for(const c of candidates){
-        try{
-          let query = supabase.from(c.table).select(c.col);
-          if(c.filters){
-            for(const [k,v] of c.filters){
-              // tenta ambos os formatos de filtro: boolean e string 'win'
-              if(typeof v === 'boolean') query = query.eq(k, v);
-              else query = query.eq(k, v);
-            }
-          }
-          const { data, error } = await query;
-          if(error || !Array.isArray(data) || data.length===0) continue;
+      while(true){
+        const { data, error } = await supabase
+          .from('game_players')
+          .select('faction')
+          .eq('winner', true)
+          .range(from, from + pageSize - 1);
 
-          // Conta por facção em JS
-          const counts = {};
-          for(const row of data){
-            const f = row[c.col];
-            if(!f) continue;
-            const k = canonFactionName(f);
-            if(!k) continue;
-            counts[k] = (counts[k]||0)+1;
-          }
-          const entries = Object.entries(counts);
-          if(entries.length===0) continue;
+        if(error) throw error;
+        if(!data || data.length === 0) break;
 
-          entries.sort((a,b)=> b[1]-a[1]);
-          const [topName, wins] = entries[0];
-          return { faction: topName, wins };
-        }catch(e){
-          // segue para o próximo candidato
-          continue;
+        for(const row of data){
+          const f = row.faction;
+          if(!f) continue;
+          const key = canonFactionName(f);
+          if(!key) continue;
+          counts[key] = (counts[key]||0) + 1;
         }
+
+        if(data.length < pageSize) break;
+        from += data.length;
       }
-      return null;
+
+      const entries = Object.entries(counts);
+      if(!entries.length) return null;
+      entries.sort((a,b)=> b[1]-a[1]);
+      const [faction, wins] = entries[0];
+      return { faction, wins };
     }
 
     async function renderTopFaction(){
@@ -308,7 +294,7 @@ Sorry. = )</div>
         textEl.textContent = `Top current winning faction: ${res.wins} wins.`;
         holder.style.display = 'flex';
       }catch(err){
-        console.error(err);
+        console.error('[TopFaction] ', err);
         holder.style.display='none';
       }
     }
