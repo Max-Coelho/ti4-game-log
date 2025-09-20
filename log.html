@@ -4,7 +4,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TI4 / PoK — Game Log (Dark)</title>
+  <title>TI4 / PoK â€" Game Log (Dark)</title>
   <style>
     :root{
       --bg:#0b0f14; --panel:#0f1720; --panel-2:#0c131c; --text:#e6edf3; --muted:#93a0ad;
@@ -92,62 +92,192 @@
     #winnersChart.winners .label{flex:0 0 auto;max-width:none}
     #winnersChart.winners .track{min-width:100px}
 
-    /* Modal base */
-    #modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay);z-index:50}
+    /* Modal base - OTIMIZADO PARA MOBILE */
+    #modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay);z-index:50;padding:8px}
     #modal.show{display:flex}
-    .dialog{background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);border:1px solid var(--border);border-radius:16px;max-width:960px;width:92vw;max-height:86vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-    /* Cabeçalho dos pop-ups: fundo #68CBD4 e título centralizado */
+    .dialog{
+      background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+      border:1px solid var(--border);
+      border-radius:16px;
+      max-width:960px;
+      width:100%;
+      max-height:calc(100vh - 16px);
+      overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+      display:flex;
+      flex-direction:column;
+    }
+    
+    /* CabeÃ§alho dos pop-ups: fundo #68CBD4 e tÃ­tulo centralizado */
     .dialog header{
       position:relative;
       display:flex;align-items:center;justify-content:center;
       padding:14px;border-bottom:1px solid var(--border);
       background:#68CBD4;
+      flex-shrink:0;
     }
     .dialog header strong{color:#0b0f14;font-weight:800;text-align:center}
     .dialog header .close{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer}
-    .dialog .content{padding:14px}
+    .dialog .content{padding:14px;overflow-y:auto;overflow-x:hidden;flex:1}
 
-    /* ===== Winners modal (layout V6) — INALTERADO ===== */
+    /* ===== Winners modal (layout V6) - LAYOUT RESPONSIVO OTIMIZADO ===== */
     #modalChart .wrow{
-      display:grid;grid-template-columns:10ch 160px 210px 1fr;align-items:center;column-gap:24px;
-      padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)
+      display:grid;
+      grid-template-columns:auto 1fr auto auto;
+      align-items:center;
+      column-gap:12px;
+      padding:8px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      min-height:44px;
     }
     #modalChart .wrow:last-child{border-bottom:none}
-    #modalChart .name{max-width:10ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    #modalChart .icons{display:grid;grid-template-columns:repeat(5,18px);gap:6px 6px;align-items:center}
+    
+    #modalChart .name{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:120px;
+      font-weight:500;
+    }
+    
+    #modalChart .icons{
+      display:flex;
+      flex-wrap:wrap;
+      gap:2px;
+      align-items:center;
+      justify-content:flex-start;
+      min-width:0;
+    }
     #modalChart .icons img{width:16px;height:16px}
-    #modalChart .track{height:18px;background:#0b121a;border:1px solid var(--border);border-radius:999px;position:relative;width:210px}
+    
+    #modalChart .track{
+      height:18px;
+      background:#0b121a;
+      border:1px solid var(--border);
+      border-radius:999px;
+      position:relative;
+      min-width:80px;
+      max-width:150px;
+      flex:1;
+    }
     #modalChart .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--bar),var(--accent))}
-    #modalChart .stats{font-size:.9rem;color:var(--muted);text-align:right;white-space:nowrap}
-    @media (max-width:920px){
-      #modalChart .wrow{grid-template-columns:10ch 120px 140px 1fr;column-gap:16px}
-      #modalChart .track{width:140px}
+    
+    #modalChart .stats{
+      font-size:.85rem;
+      color:var(--muted);
+      text-align:right;
+      white-space:nowrap;
+      min-width:0;
     }
 
-    /* ===== Factions modal — nome em 22ch (Mahact Gene-Sorcerers) ===== */
-    /* Colunas: Ícone (24px) | Nome (22ch) | Barra (210px) | Métricas (1fr)
-       Espaçamento entre colunas = 24px, igual para Nome→Barra e Barra→Métricas. */
+    /* Mobile específico para Winners */
+    @media (max-width:640px){
+      #modalChart .wrow{
+        grid-template-columns:1fr;
+        grid-template-rows:auto auto auto auto;
+        gap:6px;
+        padding:12px 8px;
+      }
+      
+      #modalChart .name{
+        max-width:none;
+        font-size:1rem;
+        font-weight:600;
+      }
+      
+      #modalChart .icons{
+        justify-content:flex-start;
+      }
+      
+      #modalChart .track{
+        max-width:none;
+        width:100%;
+      }
+      
+      #modalChart .stats{
+        text-align:left;
+        font-size:.9rem;
+      }
+    }
+
+    /* ===== Factions modal - LAYOUT RESPONSIVO OTIMIZADO ===== */
     #modalChart.factions .frow{
       display:grid;
-      grid-template-columns:24px 22ch 210px 1fr;
+      grid-template-columns:auto auto 1fr auto;
       align-items:center;
-      column-gap:24px;
-      padding:6px 0;
+      column-gap:12px;
+      padding:8px 0;
       border-bottom:1px solid rgba(255,255,255,.06);
+      min-height:44px;
     }
     #modalChart.factions .frow:last-child{border-bottom:none}
+    
     #modalChart.factions .ficon{width:18px;height:18px;object-fit:contain}
-    #modalChart.factions .fname{max-width:22ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
-    #modalChart.factions .track{height:18px;background:#0b121a;border:1px solid var(--border);border-radius:999px;position:relative;width:210px}
+    
+    #modalChart.factions .fname{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:var(--text);
+      font-weight:500;
+      max-width:200px;
+    }
+    
+    #modalChart.factions .track{
+      height:18px;
+      background:#0b121a;
+      border:1px solid var(--border);
+      border-radius:999px;
+      position:relative;
+      min-width:80px;
+      max-width:150px;
+      flex:1;
+    }
     #modalChart.factions .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--bar),var(--accent))}
-    #modalChart.factions .stats{font-size:.9rem;color:var(--muted);text-align:right;white-space:nowrap}
-    @media (max-width:920px){
-      /* No mobile mantemos 22ch para preservar o alinhamento relativo ao maior nome */
-      #modalChart.factions .frow{grid-template-columns:24px 22ch 140px 1fr;column-gap:16px}
-      #modalChart.factions .track{width:140px}
+    
+    #modalChart.factions .stats{
+      font-size:.85rem;
+      color:var(--muted);
+      text-align:right;
+      white-space:nowrap;
     }
 
-    /* Ajustes adicionais preservados de versões anteriores */
+    /* Mobile específico para Factions */
+    @media (max-width:640px){
+      #modalChart.factions .frow{
+        grid-template-columns:auto 1fr;
+        grid-template-rows:auto auto auto;
+        gap:6px;
+        padding:12px 8px;
+      }
+      
+      #modalChart.factions .fname{
+        max-width:none;
+        font-size:1rem;
+        font-weight:600;
+        grid-column:1 / -1;
+      }
+      
+      #modalChart.factions .ficon{
+        grid-row:1;
+        grid-column:1;
+        margin-right:8px;
+      }
+      
+      #modalChart.factions .track{
+        max-width:none;
+        width:100%;
+        grid-column:1 / -1;
+      }
+      
+      #modalChart.factions .stats{
+        text-align:left;
+        font-size:.9rem;
+        grid-column:1 / -1;
+      }
+    }
+
+    /* Ajustes adicionais preservados de versÃµes anteriores */
     .games button.btn.ghost[data-del]:hover{ border-color: var(--danger) !important; }
     footer{ margin-top:36px; text-align:center; }
     footer .footer-note{ max-width:960px; margin:8px auto 0; font-size:.85rem; color:var(--muted); line-height:1.4; }
@@ -158,7 +288,7 @@
     <header>
       <div>
   <div class="title">
-    Twilight Imperium IV — Game Log
+    Twilight Imperium IV â€" Game Log
     <span id="slugDisplay" style="color:#A2C94D;margin-left:6px"></span>
   </div>
 </div>
@@ -212,7 +342,7 @@
           <div class="sec-head">
             <div class="sec-left">
               <h2 class="section-title" data-target="winnersChart" style="margin:0">
-                <span class="caret" data-caret-for="winnersChart">▲</span> Top Winners
+                <span class="caret" data-caret-for="winnersChart">â–²</span> Top Winners
               </h2>
             </div>
             <button class="btn primary small" id="moreStatsBtn" title="Open detailed stats">View more</button>
@@ -225,7 +355,7 @@
           <div class="sec-head">
             <div class="sec-left">
               <h2 class="section-title" data-target="factionsChart" style="margin:0">
-                <span class="caret" data-caret-for="factionsChart">▲</span> Top Factions
+                <span class="caret" data-caret-for="factionsChart">â–²</span> Top Factions
               </h2>
             </div>
             <button class="btn primary small" id="factionStatsBtn" title="Open detailed stats">View more</button>
@@ -238,7 +368,7 @@
           <div class="sec-head">
             <div class="sec-left">
               <h2 class="section-title" data-target="pointsChart" style="margin:0">
-                <span class="caret" data-caret-for="pointsChart">▲</span> Total Points - Players
+                <span class="caret" data-caret-for="pointsChart">â–²</span> Total Points - Players
               </h2>
             </div>
           </div>
@@ -259,7 +389,7 @@
     </section>
 
     <footer>
-      <div>Conquer the Galaxy ⭐</div>
+      <div>Conquer the Galaxy â­</div>
       <div class="footer-note">
         This project was made by a non-coder.<br>
 There is no support and your data may vanish at some point.<br>
@@ -271,7 +401,7 @@ Sorry. = )
   <!-- Modal -->
   <div id="modal" aria-hidden="true">
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <header><strong id="modalTitle">Top Winners — Stats</strong><button class="close" id="modalClose" aria-label="Close">✕</button></header>
+      <header><strong id="modalTitle">Top Winners â€" Stats</strong><button class="close" id="modalClose" aria-label="Close">âœ•</button></header>
       <div class="content"><div id="modalChart" class="barchart"></div></div>
     </div>
   </div>
@@ -351,7 +481,7 @@ Sorry. = )
     const applyFactionIconToSelect=(sel)=>{const url=getFactionIcon(sel.value); sel.style.backgroundImage=url?`url('${url}')`:'none'};
 
     const pad2=n=>String(n).padStart(2,'0');
-    const minutesToHHMM=(mins)=>{ if(!Number.isFinite(mins)) return '—'; const h=Math.floor(mins/60), m=Math.round(mins%60); return `${pad2(h)}h ${pad2(m)}m`; };
+    const minutesToHHMM=(mins)=>{ if(!Number.isFinite(mins)) return 'â€"'; const h=Math.floor(mins/60), m=Math.round(mins%60); return `${pad2(h)}h ${pad2(m)}m`; };
     const HHMMtoMinutes=(hhmm)=>{ const [h,m]=String(hhmm||'').split(':').map(Number); if(Number.isFinite(h)&&Number.isFinite(m)) return h*60+m; return NaN; };
 
     gameDate.valueAsDate=new Date();
@@ -366,16 +496,16 @@ Sorry. = )
       const faction=createFactionSelect();if(pref.faction)faction.value=pref.faction;applyFactionIconToSelect(faction);faction.addEventListener('change',()=>{updateFactionOptions();applyFactionIconToSelect(faction)});
       const vp=createVPSelect(pref.vp??0);
       const del=document.createElement('button');del.type='button';del.className='btn ghost';del.textContent='Remove';
-      del.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count<=MIN_PLAYERS){flashRed(del);return}row.remove();updateNamesList();updateFactionOptions()};
+      del.onclick=()=>{const count=$('.player-row',playersWrap).length;if(count<=MIN_PLAYERS){flashRed(del);return}row.remove();updateNamesList();updateFactionOptions()};
       row.append(name,faction,vp,del);playersWrap.appendChild(row);updateFactionOptions();
     }
-    function updateNamesList(){const dl=document.getElementById('namesList');if(!dl)return;const names=new Set([...getAllPlayerNames(),...$$('.player-row input[type=text]',playersWrap).map(i=>i.value.trim()).filter(Boolean)]);dl.innerHTML=Array.from(names).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}"></option>`).join('')}
-    function getSelectedFactions(){return $$('.player-row select',playersWrap).filter(s=>!s.hasAttribute('data-vp')).map(s=>s.value).filter(v=>v&&v!=='')}
-    function updateFactionOptions(){const chosen=new Set(getSelectedFactions());$$('.player-row select',playersWrap).forEach(sel=>{if(sel.hasAttribute('data-vp'))return;$$('option',sel).forEach(opt=>{if(!opt.value)return;opt.disabled=chosen.has(opt.value)&&sel.value!==opt.value})})}
-    function ensureMinPlayers(min=MIN_PLAYERS){while($$('.player-row',playersWrap).length<min){createPlayerRow()}} ensureMinPlayers(MIN_PLAYERS);
-    addPlayerBtn.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count>=MAX_PLAYERS){flashRed(addPlayerBtn);return}createPlayerRow();updateNamesList()};
+    function updateNamesList(){const dl=document.getElementById('namesList');if(!dl)return;const names=new Set([...getAllPlayerNames(),...$('.player-row input[type=text]',playersWrap).map(i=>i.value.trim()).filter(Boolean)]);dl.innerHTML=Array.from(names).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}"></option>`).join('')}
+    function getSelectedFactions(){return $('.player-row select',playersWrap).filter(s=>!s.hasAttribute('data-vp')).map(s=>s.value).filter(v=>v&&v!=='')}
+    function updateFactionOptions(){const chosen=new Set(getSelectedFactions());$('.player-row select',playersWrap).forEach(sel=>{if(sel.hasAttribute('data-vp'))return;$('option',sel).forEach(opt=>{if(!opt.value)return;opt.disabled=chosen.has(opt.value)&&sel.value!==opt.value})})}
+    function ensureMinPlayers(min=MIN_PLAYERS){while($('.player-row',playersWrap).length<min){createPlayerRow()}} ensureMinPlayers(MIN_PLAYERS);
+    addPlayerBtn.onclick=()=>{const count=$('.player-row',playersWrap).length;if(count>=MAX_PLAYERS){flashRed(addPlayerBtn);return}createPlayerRow();updateNamesList()};
     prefill6Btn.onclick=()=>{playersWrap.innerHTML='';for(let i=0;i<6;i++)createPlayerRow();updateNamesList();updateFactionOptions()};
-    clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updateNamesList();$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');$$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
+    clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updateNamesList();$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
 
     function validateUniqueFactions(players){const s=players.map(p=>p.faction).filter(Boolean);return new Set(s).size===s.length}
     function computePodiums(players){const scores=Array.from(new Set(players.map(p=>p.vp))).sort((a,b)=>b-a);const group=(score)=>players.map((p,i)=>p.vp===score?i:-1).filter(i=>i!==-1);return{scores,first:scores[0]!==undefined?group(scores[0]):[],second:scores[1]!==undefined?group(scores[1]):[],third:scores[2]!==undefined?group(scores[2]):[]}}
@@ -405,7 +535,7 @@ Sorry. = )
       const date=gameDate.value||new Date().toISOString().slice(0,10);
       const durMinutes=HHMMtoMinutes(gameDurationTime.value);
       if(!Number.isFinite(durMinutes) || durMinutes<=0){ alert('Enter a valid duration (HH:MM).'); return; }
-      const rows=$$('.player-row',playersWrap);
+      const rows=$('.player-row',playersWrap);
       const players=rows.map(r=>{
         const [nameEl,factionEl,vpEl]=[$('input[type=text]',r),$('select:not([data-vp])',r),$('select[data-vp]',r)];
         return {name:(nameEl.value||'').trim(),faction:factionEl.value,vp:Number(vpEl.value||0)};
@@ -420,8 +550,8 @@ Sorry. = )
       games.push({id,date,durationMinutes:durMinutes,players,winners:winnerIdx}); window.saveGames(games);
 
       render();
-      $$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');
-      $$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');
+      $('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');
+      $('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');
       updateNamesList(); updateFactionOptions();
     });
 
@@ -434,7 +564,7 @@ Sorry. = )
       kpi('Games Logged',s.totalGames);
       kpi('Unique Players',s.uniquePlayers);
       kpi('Avg Players / Game',s.avgPlayersPerGame.toFixed(2));
-      kpi('Avg Game Duration', s.avgDurationMinutes!=null ? minutesToHHMM(s.avgDurationMinutes) : '—');
+      kpi('Avg Game Duration', s.avgDurationMinutes!=null ? minutesToHHMM(s.avgDurationMinutes) : 'â€"');
     }
 
     function renderBarChart(container, rows, labelKey, valueKey, maxItems=10){
@@ -452,7 +582,7 @@ Sorry. = )
       }
     }
 
-    /* ===== Top Winners (na seção Stats & Charts) — sem barras ===== */
+    /* ===== Top Winners (na seÃ§Ã£o Stats & Charts) â€" sem barras ===== */
     function renderWinnersChart(container,winnersRank){
       container.innerHTML = '';
       if(!winnersRank.length){ container.innerHTML = '<div class="muted">No data yet.</div>'; return }
@@ -472,7 +602,7 @@ Sorry. = )
       });
     }
 
-    function formatWinnersWithFactions(g){return g.winners.map(i=>{const p=g.players[i];return `${p.name} – ${p.faction}`})}
+    function formatWinnersWithFactions(g){return g.winners.map(i=>{const p=g.players[i];return `${p.name} â€" ${p.faction}`})}
     function getLongestShortestDurations(){
       const ds=games.map(g=>g.durationMinutes).filter(d=>Number.isFinite(d));
       if(!ds.length) return {max:null,min:null};
@@ -501,13 +631,13 @@ Sorry. = )
         const sum=document.createElement('details');
         const podium=computePodiums(g.players);
         const makeBadge=(icon,arr,vp)=>arr.length?`<span class="badge" title="${icon}">${icon} ${arr.map(i=>g.players[i].name).join(', ')} (${vp} VP)</span>`:'';
-        const firstBadge=g.winners.length?`<span class="badge" title="Winner(s)">🏆 ${winners.join(', ')}</span>`:'';
-        const secondBadge=makeBadge('🥈',podium.second,podium.scores[1]);
-        const thirdBadge =makeBadge('🥉',podium.third ,podium.scores[2]);
-        const pcount=`<span class="badge" title="Players">👥 ${g.players.length}</span>`;
-        const d=`<span class="badge">📅 ${g.date}</span>`;
+        const firstBadge=g.winners.length?`<span class="badge" title="Winner(s)">ðŸ† ${winners.join(', ')}</span>`:'';
+        const secondBadge=makeBadge('ðŸ¥ˆ',podium.second,podium.scores[1]);
+        const thirdBadge =makeBadge('ðŸ¥‰',podium.third ,podium.scores[2]);
+        const pcount=`<span class="badge" title="Players">ðŸ'¥ ${g.players.length}</span>`;
+        const d=`<span class="badge">ðŸ"… ${g.date}</span>`;
         const durMins = Number(g.durationMinutes);
-        const dur=`<span class="badge" title="Duration">⏱ ${minutesToHHMM(durMins)}</span>`;
+        const dur=`<span class="badge" title="Duration">â± ${minutesToHHMM(durMins)}</span>`;
         const longestTag = (longest!=null && durMins===longest) ? `<span class="badge tag-longest">Longest Game</span>` : '';
         const shortestTag= (shortest!=null && durMins===shortest)? `<span class="badge tag-shortest">Shortest Game</span>` : '';
         sum.innerHTML = `<summary><div class="left">${firstBadge} ${secondBadge} ${thirdBadge} ${pcount} ${d} ${dur} ${longestTag} ${shortestTag}</div><div style="display:flex;gap:8px">
@@ -525,7 +655,7 @@ Sorry. = )
       }
       gamesList.appendChild(frag);
 
-      $$('button[data-del]').forEach(btn=>{ btn.onclick = ()=>{ const id=btn.getAttribute('data-del'); games = games.filter(g=>g.id!==id); window.saveGames(games); render(); } });
+      $('button[data-del]').forEach(btn=>{ btn.onclick = ()=>{ const id=btn.getAttribute('data-del'); games = games.filter(g=>g.id!==id); window.saveGames(games); render(); } });
     }
 
     function render(){
@@ -541,7 +671,7 @@ Sorry. = )
 
     /* ===== Modal: Top Winners (mantido) ===== */
     function openWinnersModal(){
-      $('#modalTitle').textContent='Top Winners — Stats';
+      $('#modalTitle').textContent='Top Winners â€" Stats';
       modalChart.innerHTML='';
       const s=computeStats(); const winFac=computeWinningFactionsByPlayer();
       const rows=s.winnersRank.map(r=>({name:r.name,wins:r.wins,games:r.games,winRate:(r.winRate*100)||0,avgVP:r.avgVP||0}));
@@ -553,15 +683,15 @@ Sorry. = )
         row.innerHTML=`<div class="name" title="${r.name}">${r.name}</div>
           <div class="icons">${icons}</div>
           <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-          <div class="stats"><strong>${r.wins||0} W</strong> · ${r.games||0} games · ${r.winRate.toFixed(0)}% WR · ${r.avgVP.toFixed(1)} VP/g</div>`;
+          <div class="stats"><strong>${r.wins||0} W</strong> Â· ${r.games||0} games Â· ${r.winRate.toFixed(0)}% WR Â· ${r.avgVP.toFixed(1)} VP/g</div>`;
         modalChart.appendChild(row);
       });
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
     }
 
-    /* ===== Modal: Top Factions (nome 22ch, barra logo após o nome) ===== */
+    /* ===== Modal: Top Factions (nome 22ch, barra logo apÃ³s o nome) ===== */
     function openFactionsModal(){
-      $('#modalTitle').textContent='Top Factions — Stats';
+      $('#modalTitle').textContent='Top Factions â€" Stats';
       modalChart.innerHTML='';
       modalChart.classList.add('factions');
 
@@ -587,7 +717,7 @@ Sorry. = )
           <div class="ficon-wrap">${icon?`<img class="ficon" src="${icon}" alt="" title="${r.faction}">`:''}</div>
           <div class="fname" title="${r.faction}">${r.faction}</div>
           <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-          <div class="stats"><strong>${r.wins} W</strong> · ${r.plays} games · ${r.wr.toFixed(0)}% WR</div>
+          <div class="stats"><strong>${r.wins} W</strong> Â· ${r.plays} games Â· ${r.wr.toFixed(0)}% WR</div>
         `;
         modalChart.appendChild(row);
       });
@@ -595,7 +725,7 @@ Sorry. = )
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
     }
 
-    // Botões View more
+    // BotÃµes View more
     moreStatsBtn?.addEventListener('click', ()=>{ if(games.length) openWinnersModal(); });
     factionStatsBtn?.addEventListener('click', ()=>{ if(games.length) openFactionsModal(); });
 
@@ -613,12 +743,12 @@ Sorry. = )
         sec.classList.add('collapsed');
         localStorage.setItem('collapse_'+targetId,'1');
         content?.setAttribute('aria-expanded','false');
-        if(caret) caret.textContent='▼';
+        if(caret) caret.textContent='â–¼';
       }else{
         sec.classList.remove('collapsed');
         localStorage.setItem('collapse_'+targetId,'0');
         content?.setAttribute('aria-expanded','true');
-        if(caret) caret.textContent='▲';
+        if(caret) caret.textContent='â–²';
       }
     }
     function refreshCaretsFromState(){
@@ -654,7 +784,7 @@ Sorry. = )
   </script>
 
 <script>
-/* ======= Supabase sync (não altera layout) ======= */
+/* ======= Supabase sync (nÃ£o altera layout) ======= */
 const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
 const supabase = window.supabase?.createClient
@@ -664,7 +794,7 @@ const supabase = window.supabase?.createClient
 const __slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1] || null;
   if (__slug) {
   const el = document.getElementById('slugDisplay');
-  if (el) el.textContent = '— ' + __slug;
+  if (el) el.textContent = 'â€" ' + __slug;
 }
 const __flash = (msg, ok=false)=>{
   const el = document.getElementById('supabaseMsg');
@@ -694,7 +824,7 @@ async function __loadFromSupabase(){
       .order('created_at', { ascending: true });
     if(error) throw error;
     const arr = (data || []).map(r => r.payload || {}).filter(x => x && x.id);
-// 🔧 atualiza as DUAS variáveis
+// ðŸ"§ atualiza as DUAS variÃ¡veis
 games = Array.isArray(arr) ? arr : [];
 window.games = games;
 
@@ -710,7 +840,7 @@ if (typeof window.render === 'function') window.render();
   const __origSave = window.saveGames || function(){};
   let __syncTimer = null;
   window.saveGames = function(arr){
-    // se quiser manter cópia local também, descomente:
+    // se quiser manter cÃ³pia local tambÃ©m, descomente:
     // __origSave(arr);
 
     clearTimeout(__syncTimer);
