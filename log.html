@@ -92,9 +92,9 @@
     #winnersChart.winners .label{flex:0 0 auto;max-width:none}
     #winnersChart.winners .track{min-width:100px}
 
-    /* ========================= */
-    /* MODAL — SOMENTE AJUSTES  */
-    /* ========================= */
+    /* ===================== */
+    /* MODAL — AJUSTES FINAIS*/
+    /* ===================== */
     #modal{
       position:fixed; inset:0; display:none;
       align-items:center; justify-content:center;
@@ -102,20 +102,35 @@
     }
     #modal.show{display:flex}
 
-    /* POP-UP edge-to-edge (sem scroll horizontal) */
+    /* Desktop (igual) */
     .dialog{
       background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
       border:1px solid var(--border);
-      width:100vw;                 /* ocupa toda a largura */
-      max-width:100vw;
-      max-height:96svh;            /* só vertical quando precisar */
-      border-radius:0;             /* encosta nas bordas */
+      border-radius:16px;
+      width:min(960px,96vw);
+      max-height:92vh;
       overflow-y:auto;
-      overflow-x:hidden;           /* nunca rolagem horizontal */
+      overflow-x:hidden;
       box-shadow:0 20px 60px rgba(0,0,0,.5);
       min-width:0;
     }
-    /* Cabeçalho fixo e centralizado (mantido) */
+
+    /* Mobile: ocupa a tela TODA horizontalmente, sem scroll X */
+    @media (max-width:768px){
+      #modal{align-items:stretch; justify-content:stretch;}
+      .dialog{
+        width:100svw;               /* largura total da viewport segura */
+        max-width:100svw;
+        height:auto;
+        max-height:100svh;
+        border-radius:0;            /* encosta nas bordas */
+        margin:0;
+        overflow-y:auto;
+        overflow-x:hidden;          /* NUNCA barra horizontal */
+      }
+    }
+
+    /* Cabeçalho fixo, centralizado */
     .dialog header{
       position:sticky; top:0; z-index:1;
       display:flex; align-items:center; justify-content:center;
@@ -130,15 +145,14 @@
     .dialog .content{padding:12px 14px; overflow-x:hidden}
     #modalChart{min-width:0; overflow-x:hidden}
 
-    /* ===== Winners modal (layout fluido, tudo visível) =====
-       Colunas: Nome | Ícones | Barra (elástica) | Métricas  */
+    /* ===== Winners modal (grid fluido, tudo visível) ===== */
     #modalChart .wrow{
       display:grid;
       grid-template-columns:
         minmax(9ch, 14ch)          /* nome */
-        minmax(96px, 26vw)         /* ícones (podem quebrar internamente) */
-        minmax(36vw, 1fr)          /* barra elástica */
-        auto;                      /* métricas (W, games, WR, VP/g) */
+        minmax(96px, 26vw)         /* ícones */
+        minmax(36vw, 1fr)          /* barra */
+        auto;                      /* métricas */
       align-items:center;
       column-gap:16px;
       padding:8px 0;
@@ -164,18 +178,6 @@
     #modalChart .stats{
       font-size:.9rem; color:var(--muted); text-align:right; white-space:nowrap
     }
-
-    /* breakpoints: redistribui espaço mantendo tudo na mesma linha lógica */
-    @media (max-width:920px){
-      #modalChart .wrow{
-        grid-template-columns:
-          minmax(9ch, 12ch)
-          minmax(90px, 30vw)
-          minmax(32vw, 1fr)
-          auto;
-        column-gap:12px;
-      }
-    }
     @media (max-width:560px){
       #modalChart .wrow{
         grid-template-columns:
@@ -188,8 +190,7 @@
       #modalChart .stats{font-size:.88rem}
     }
 
-    /* ===== Factions modal (mesma lógica) =====
-       Ícone | Nome | Barra elástica | Métricas */
+    /* ===== Factions modal (mesma lógica) ===== */
     #modalChart.factions .frow{
       display:grid;
       grid-template-columns:
@@ -214,14 +215,6 @@
     }
     #modalChart.factions .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--bar),var(--accent))}
     #modalChart.factions .stats{font-size:.9rem;color:var(--muted);text-align:right;white-space:nowrap}
-
-    @media (max-width:920px){
-      #modalChart.factions .frow{
-        grid-template-columns:
-          24px minmax(16ch, 22ch) minmax(32vw, 1fr) auto;
-        column-gap:12px;
-      }
-    }
     @media (max-width:560px){
       #modalChart.factions .frow{
         grid-template-columns:
@@ -382,10 +375,9 @@
 
     const LS_KEY='ti4_game_log_v1';
     const loadGames=()=>{try{return JSON.parse(localStorage.getItem(LS_KEY)||'[]')}catch(e){return[]}};
-    const saveGames=(a)=>localStorage.setItem(LS_KEY,JSON.stringify(a));
+    window.saveGames=(a)=>localStorage.setItem(LS_KEY,JSON.stringify(a));
     let games=loadGames();
 
-    // migrate durations & factions
     (function migrateData(){
       try{
         const stripThe=s=>(s||'').replace(/^\s*the\s+/i,'');
@@ -535,7 +527,6 @@
       }
     }
 
-    /* ===== Top Winners (na seção menor) ===== */
     function renderWinnersChart(container,winnersRank){
       container.innerHTML = '';
       if(!winnersRank.length){ container.innerHTML = '<div class="muted">No data yet.</div>'; return }
