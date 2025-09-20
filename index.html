@@ -1,60 +1,52 @@
 <script>
-// === substitua DAQUI…
+// === PATCH: substitua a função fetchTopFactionGlobal inteira por esta ===
 async function fetchTopFactionGlobal(){
-  // Conta vitórias por facção direto no PostgREST
-  const { data, error } = await supabase
-    .from('game_players')
-    .select('faction, wins:count()', { head: false })
-    .eq('winner', true)
-    .group('faction')
-    .order('wins', { ascending: false })
-    .limit(1);
-
-  if (error) {
-    console.error('[TopFaction] select error:', error);
-    throw error;
-  }
-  if (!data || data.length === 0) return null;
-  // data[0] = { faction: 'Letnev', wins: 12 }
-  const row = data[0];
-  return { faction: row.faction, wins: Number(row.wins) || 0 };
-}
-
-async function renderTopFaction(){
-  const holder = document.getElementById('topFaction');
-  const iconEl = document.getElementById('topFactionIcon');
-  const textEl = document.getElementById('topFactionText');
-
+  // 1) Tenta agregar direto no PostgREST (conta vitórias por facção)
   try{
-    const res = await fetchTopFactionGlobal();
+    const { data, error } = await supabase
+      .from('game_players')
+      // Ao selecionar "faction" junto de "count()", o PostgREST já faz GROUP BY automaticamente.
+      .select('faction, wins:count()')
+      .eq('winner', true)
+      .order('wins', { ascending: false })
+      .limit(1);
 
-    // Se não houver vencedores registrados ainda, mostre uma mensagem simples
-    if (!res) {
-      holder.style.display = 'flex';
-      iconEl.style.display = 'none';
-      textEl.textContent = 'Top current winning faction: no wins yet.';
-      return;
+    if (error) throw error;
+    if (data && data.length) {
+      const row = data[0];
+      return { faction: row.faction, wins: Number(row.wins) || 0 };
     }
-
-    // Caminho do ícone (mantém o aliasMap/canonFactionName/factionIconPath que você já tem)
-    const iconPath = factionIconPath(res.faction);
-
-    if (iconPath) {
-      iconEl.src = iconPath;      // ex.: Faction_Icons/Letnev.png
-      iconEl.alt = res.faction + ' icon';
-      iconEl.title = res.faction;
-      iconEl.style.display = 'block';
-    } else {
-      iconEl.style.display = 'none';
-    }
-
-    textEl.textContent = `Top current winning faction: ${res.wins} wins.`;
-    holder.style.display = 'flex';
   }catch(err){
-    console.error('[TopFaction] render error:', err);
-    // Não quebra a home: só esconde o bloco
-    holder.style.display = 'none';
+    console.warn('[TopFaction] aggregate failed, falling back to client count:', err);
   }
+
+  // 2) Fallback: carrega em páginas e conta no cliente (não usa group nem agregação)
+  const pageSize = 2000;
+  let from = 0;
+  const counts = {};
+  while(true){
+    const { data, error } = await supabase
+      .from('game_players')
+      .select('faction')
+      .eq('winner', true)
+      .range(from, from + pageSize - 1);
+
+    if (error) { console.error('[TopFaction] fallback error:', error); break; }
+    if (!data || data.length === 0) break;
+
+    for (const r of data){
+      const key = canonFactionName(r.faction);
+      if (!key) continue;
+      counts[key] = (counts[key] || 0) + 1;
+    }
+    if (data.length < pageSize) break;
+    from += data.length;
+  }
+
+  const entries = Object.entries(counts);
+  if (!entries.length) return null;
+  entries.sort((a,b)=> b[1]-a[1]);
+  const [faction, wins] = entries[0];
+  return { faction, wins };
 }
-// …ATÉ AQUI
 </script>
