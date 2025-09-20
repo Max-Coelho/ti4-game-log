@@ -1,811 +1,305 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TI4 / PoK — Game Log (Dark)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Twilight Imperium IV — Game Log</title>
   <style>
-    :root{
-      --bg:#0b0f14; --panel:#0f1720; --panel-2:#0c131c; --text:#e6edf3; --muted:#93a0ad;
-      --border:#1e2937; --accent:#60a5fa; --accent-2:#22d3ee; --ok:#10b981; --danger:#ef4444; --warn:#f59e0b;
-      --bar:#6ee7b7; --overlay: rgba(2,6,12,.72);
+    :root {
+      --bg: #0b0f14;
+      --panel: #0f1720;
+      --panel-2: #0c131c;
+      --text: #e6edf3;
+      --muted: #93a0ad;
+      --muted-2: #7a8896; /* cinza um pouco mais escuro para o rodapé */
+      --border: #1e2937;
+      --accent: #60a5fa;
+      --accent-2: #22d3ee;
+      --ok: #10b981;
+      --danger: #ef4444;
+      --warn: #f59e0b;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
-      background:linear-gradient(180deg, #0a0f14 0%, #0b1016 100%); color:var(--text);
+    *{ box-sizing:border-box }
+    html, body{
+      height:100%;
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+      background: linear-gradient(180deg, #0a0f14 0%, #0b1016 100%);
+      color: var(--text);
     }
-    .container{max-width:1200px;margin:0 auto;padding:20px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-    .title{font-size:clamp(18px,3.3vw,28px);font-weight:700;letter-spacing:.3px}
-    .row{display:grid;grid-template-columns:1fr 1.28fr;gap:14px}
-    @media (max-width:980px){.row{grid-template-columns:1fr}}
-
-    .card{background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow: 0 6px 22px rgba(0,0,0,.28)}
-    .card h2{margin:4px 0 12px 0;font-size:1.05rem;letter-spacing:.3px}
-    .muted{color:var(--muted)}
-
-    /* forms */
-    form .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:8px}
-    label{font-size:.8rem;color:var(--muted)}
-    input, select, button, textarea{
-      background:#0b121a;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:.95rem;outline:none
+    .container{
+      max-width:600px; margin:0 auto; padding:40px 20px; min-height:100vh;
+      display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
     }
-    input[type="date"]{color-scheme:dark}
-    input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1) brightness(1.4);opacity:.95;cursor:pointer}
-    input:focus, select:focus, textarea:focus{border-color:#334155;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
-    .btn{cursor:pointer;transition:.15s ease;display:inline-flex;gap:8px;align-items:center}
-    .btn.primary{background:linear-gradient(90deg, rgba(96,165,250,.18), rgba(96,165,250,.10));border-color:#334155}
-    .btn.primary:hover{transform:translateY(-1px);border-color:#3b82f6}
-    .btn.ghost{background:transparent}
-    .btn.danger{border-color:#7f1d1d;background:linear-gradient(90deg, rgba(239,68,68,.15), rgba(239,68,68,.08))}
-    .btn.small{padding:6px 8px;font-size:.85rem}
-    .btn.glow-red{border-color:var(--danger)!important; animation: flashRed .6s ease}
-    @keyframes flashRed{0%{box-shadow:0 0 0 0 rgba(239,68,68,0)}30%{box-shadow:0 0 0 4px rgba(239,68,68,.35)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
-
-    /* players list */
-    .player-row{display:grid;grid-template-columns:1.2fr 1.4fr .6fr auto;gap:8px;align-items:center}
-    .player-row + .player-row{margin-top:8px}
-
-    /* stats grid */
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 10px}
-    @media (max-width:980px){.stats{grid-template-columns:repeat(2,1fr)}}
-    .stat{background:#0b121a;border:1px solid var(--border);border-radius:14px;padding:12px}
-    .stat .kpi{font-size:1.3rem;font-weight:700;text-align:right}
-
-    .sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
-    .sec-left{display:flex;align-items:center;gap:8px}
-    .section-title{cursor:pointer;display:flex;align-items:center;gap:8px}
-    .caret{font-size:.95rem;color:var(--muted);width:1em;text-align:center}
-    .collapsed .sec-content{display:none}
-
-    /* games list */
-    .games > details{border:1px solid var(--border);border-radius:14px;padding:10px 12px;background:#0c131c}
-    .games > details + details{margin-top:8px}
-    summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    summary .left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .badge{padding:4px 8px;background:#0b121a;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:.78rem}
-    .badge.tag-longest{border-color:#7f1d1d;color:#fca5a5;background:linear-gradient(90deg, rgba(239,68,68,.15), rgba(239,68,68,.08))}
-    .badge.tag-shortest{border-color:#065f46;color:#86efac;background:linear-gradient(90deg, rgba(16,185,129,.15), rgba(16,185,129,.08))}
-
-    .tools{display:flex;flex-wrap:wrap;gap:8px}
-
-    /* charts (cards) */
-    .barchart{display:flex;flex-direction:column;gap:8px}
-    .bar{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
-    .bar .meta{display:flex;align-items:center;gap:10px;flex:1 1 auto}
-    .bar .label{display:flex;align-items:center;gap:6px;flex:0 0 160px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:.9rem}
-    @media (max-width:560px){.bar .label{flex-basis:120px;max-width:120px}}
-    .bar .track{height:18px;background:#0b121a;border:1px solid var(--border);border-radius:999px;position:relative;min-width:240px;flex:1 1 auto}
-    .bar .fill{position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:999px;background:linear-gradient(90deg, var(--bar), var(--accent));transition:width .4s cubic-bezier(.4,.0,.2,1)}
-    .bar .value{font-weight:700;font-variant-numeric:tabular-nums}
-
-    /* faction icons */
-    .fac-icon{width:18px;height:18px;object-fit:contain;vertical-align:middle;flex:none}
-    .fac-icon.sm{width:16px;height:16px;margin-right:6px}
-    select.faction-select{background-repeat:no-repeat;background-position:8px center;background-size:18px 18px;padding-left:36px}
-    select.faction-select:focus{background-color:#0b121a}
-
-    .win-icons{display:inline-flex;align-items:center;gap:6px;margin-left:8px}
-    #winnersChart.winners .label{flex:0 0 auto;max-width:none}
-    #winnersChart.winners .track{min-width:100px}
-
-    /* ===================== */
-    /* MODAL — AJUSTES FINAIS*/
-    /* ===================== */
-    #modal{
-      position:fixed; inset:0; display:none;
-      align-items:center; justify-content:center;
-      background:var(--overlay); z-index:50
+    .logo{
+      font-size:2.5rem; font-weight:800; margin-bottom:8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
-    #modal.show{display:flex}
+    .subtitle{ color:var(--muted); font-size:1.1rem; margin-bottom:40px; line-height:1.5; }
 
-    /* Desktop (igual) */
-    .dialog{
-      background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
-      border:1px solid var(--border);
-      border-radius:16px;
-      width:min(960px,96vw);
-      max-height:92vh;
-      overflow-y:auto;
-      overflow-x:hidden;
-      box-shadow:0 20px 60px rgba(0,0,0,.5);
-      min-width:0;
+    .card{
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+      border:1px solid var(--border); border-radius:16px; padding:32px;
+      box-shadow:0 6px 22px rgba(0,0,0,.28); width:100%; max-width:500px;
     }
 
-    /* Mobile: ocupa a tela TODA horizontalmente, sem scroll X */
-    @media (max-width:768px){
-      #modal{align-items:stretch; justify-content:stretch;}
-      .dialog{
-        width:100svw;               /* largura total da viewport segura */
-        max-width:100svw;
-        height:auto;
-        max-height:100svh;
-        border-radius:0;            /* encosta nas bordas */
-        margin:0;
-        overflow-y:auto;
-        overflow-x:hidden;          /* NUNCA barra horizontal */
-      }
+    /* blocos internos do card */
+    .block + .block{ margin-top:24px; }
+
+    .btn{
+      background: linear-gradient(90deg, rgba(96,165,250,.18), rgba(96,165,250,.10));
+      border:1px solid #334155; border-radius:12px; padding:16px 24px;
+      font-size:1.1rem; color:var(--text); cursor:pointer; transition:all .15s ease;
+      text-decoration:none; display:inline-block; width:100%; margin:12px 0;
+    }
+    .btn:hover{
+      background:linear-gradient(90deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
+      border-color:#475569; transform:translateY(-1px);
+    }
+    .btn.secondary{ background:transparent; border-color:var(--border); }
+    /* hover do secondary igual ao do primary */
+    .btn.secondary:hover{
+      background:linear-gradient(90deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
+      border-color:#475569; transform:translateY(-1px);
     }
 
-    /* Cabeçalho fixo, centralizado */
-    .dialog header{
-      position:sticky; top:0; z-index:1;
-      display:flex; align-items:center; justify-content:center;
-      padding:14px; border-bottom:1px solid var(--border);
-      background:#68CBD4;
+    .input-group{ margin:20px 0; text-align:left; }
+    .input-group label{ display:block; color:var(--muted); font-size:.9rem; margin-bottom:6px; }
+    .input-group input{
+      width:100%; background:#0b121a; color:var(--text); border:1px solid var(--border);
+      border-radius:12px; padding:12px; font-size:1rem; outline:none;
     }
-    .dialog header strong{color:#0b0f14;font-weight:800;text-align:center}
-    .dialog header .close{
-      position:absolute; right:14px; top:50%; transform:translateY(-50%);
-      background:transparent; border:1px solid var(--border); border-radius:10px; padding:6px 10px; cursor:pointer
-    }
-    .dialog .content{padding:12px 14px; overflow-x:hidden}
-    #modalChart{min-width:0; overflow-x:hidden}
+    .input-group input:focus{ border-color:#334155; box-shadow:0 0 0 3px rgba(96,165,250,.18); }
 
-    /* ===== Winners modal (grid fluido, tudo visível) ===== */
-    #modalChart .wrow{
-      display:grid;
-      grid-template-columns:
-        minmax(9ch, 14ch)          /* nome */
-        minmax(96px, 26vw)         /* ícones */
-        minmax(36vw, 1fr)          /* barra */
-        auto;                      /* métricas */
-      align-items:center;
-      column-gap:16px;
-      padding:8px 0;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      min-width:0;
+    .divider{ display:flex; align-items:center; margin:24px 0; color:var(--muted); font-size:.9rem; }
+    .divider::before, .divider::after{ content:''; flex:1; height:1px; background:var(--border); }
+    .divider span{ padding:0 16px; text-transform:uppercase; letter-spacing:.06em; font-size:.8rem; }
+
+    /* features em 2 colunas */
+    .features{ list-style:none; padding:0; margin:0; text-align:left; }
+    .features.two-col{
+      display:grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap:20px; row-gap:8px;
     }
-    #modalChart .wrow:last-child{border-bottom:none}
-    #modalChart .name{
-      max-width:14ch; white-space:nowrap; overflow:hidden; text-overflow:ellipsis
+    .features li{
+      display:flex; align-items:center; color:var(--muted);
+      margin:8px 0;
     }
-    #modalChart .icons{
-      display:flex; flex-wrap:wrap; gap:6px; align-items:center; min-width:0;
+    .features li::before{
+      content:'✓'; color:var(--ok); font-weight:bold; margin-right:12px; font-size:1.05rem;
     }
-    #modalChart .icons img{width:16px;height:16px;object-fit:contain}
-    #modalChart .track{
-      height:18px; background:#0b121a; border:1px solid var(--border);
-      border-radius:999px; position:relative; width:auto; min-width:0;
-    }
-    #modalChart .fill{
-      position:absolute; left:0; top:0; bottom:0;
-      border-radius:999px; background:linear-gradient(90deg,var(--bar),var(--accent))
-    }
-    #modalChart .stats{
-      font-size:.9rem; color:var(--muted); text-align:right; white-space:nowrap
-    }
-    @media (max-width:560px){
-      #modalChart .wrow{
-        grid-template-columns:
-          minmax(9ch, 11ch)
-          minmax(84px, 34vw)
-          minmax(30vw, 1fr)
-          auto;
-        column-gap:10px;
-      }
-      #modalChart .stats{font-size:.88rem}
+    @media (max-width:480px){
+      .features.two-col{ grid-template-columns: 1fr; }
     }
 
-    /* ===== Factions modal (mesma lógica) ===== */
-    #modalChart.factions .frow{
-      display:grid;
-      grid-template-columns:
-        24px
-        minmax(16ch, 24ch)
-        minmax(36vw, 1fr)
-        auto;
-      align-items:center;
-      column-gap:16px;
-      padding:8px 0;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      min-width:0;
+    /* mensagens */
+    .loading{ display:none; color:var(--accent); font-size:.9rem; margin-top:12px; }
+    .error{ color:var(--danger); font-size:.9rem; margin-top:12px; display:none; }
+    .success{ color:var(--ok); font-size:.9rem; margin-top:12px; display:none; }
+
+    /* rodapé */
+    .footer{
+      max-width:500px;
+      margin:32px auto 0; /* espaçamento entre o box e o início do texto */
+      text-align:center;
+      color:var(--muted-2); /* cinza um pouco mais escuro */
+      line-height:1.5;
+      background: transparent; /* mantém o gradiente geral */
     }
-    #modalChart.factions .frow:last-child{border-bottom:none}
-    #modalChart.factions .ficon{width:18px;height:18px;object-fit:contain}
-    #modalChart.factions .fname{
-      max-width:24ch; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text)
+    .footer-title{
+      font-weight:700;
+      font-size:0.95rem; /* ligeiramente maior que o texto abaixo */
+      margin-bottom:4px;
     }
-    #modalChart.factions .track{
-      height:18px;background:#0b121a;border:1px solid var(--border);
-      border-radius:999px;position:relative;width:auto;min-width:0;
-    }
-    #modalChart.factions .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--bar),var(--accent))}
-    #modalChart.factions .stats{font-size:.9rem;color:var(--muted);text-align:right;white-space:nowrap}
-    @media (max-width:560px){
-      #modalChart.factions .frow{
-        grid-template-columns:
-          24px minmax(14ch, 22ch) minmax(30vw, 1fr) auto;
-        column-gap:10px;
-      }
-      #modalChart.factions .stats{font-size:.88rem}
+    .footer-text{
+      font-size:0.85rem; /* um pouco menor */
+      white-space:pre-line; /* mantém quebras de linha do texto fornecido */
     }
 
-    /* (resto inalterado) */
-    .games button.btn.ghost[data-del]:hover{ border-color: var(--danger) !important; }
-    footer{ margin-top:36px; text-align:center; }
-    footer .footer-note{ max-width:960px; margin:8px auto 0; font-size:.85rem; color:var(--muted); line-height:1.4; }
+    @media (max-width:480px){
+      .container{ padding:20px; }
+      .logo{ font-size:2rem; }
+      .card{ padding:24px; }
+    }
   </style>
+  <!-- Supabase JS v2 via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="container">
-    <header>
-      <div>
-        <div class="title">
-          Twilight Imperium IV — Game Log
-          <span id="slugDisplay" style="color:#A2C94D;margin-left:6px"></span>
-        </div>
-      </div>
-      <div class="tools">
-        <button class="btn primary" id="exportBtn" title="Export your data as JSON">Export JSON</button>
-        <label class="btn ghost" for="importInput" title="Import a previously exported JSON">
-          Import JSON <input id="importInput" type="file" accept="application/json" style="display:none" />
-        </label>
-        <button class="btn danger" id="resetBtn" title="Erase all data">Reset</button>
-      </div>
-    </header>
+    <div class="logo">TI4 Game Log</div>
+    <p class="subtitle">
+      Create a log for your Twilight Imperium IV matches.<br/>
+      Share the unique URL with your friends and track your galactic achievements together!
+    </p>
 
-    <div class="row">
-      <!-- Add Game -->
-      <section class="card" aria-labelledby="addGameTitle">
-        <h2 id="addGameTitle">Add Game</h2>
-        <form id="gameForm">
-          <div class="grid" style="margin-bottom:8px">
-            <div style="grid-column: span 3">
-              <label for="gameDate">Date</label>
-              <input id="gameDate" type="date" required />
-            </div>
-            <div style="grid-column: span 3">
-              <label for="gameDurationTime">Duration (HH:MM)</label>
-              <input id="gameDurationTime" type="time" step="60" required />
-            </div>
-            <div style="grid-column: span 6;display:flex;gap:8px;align-items:flex-end;justify-content:flex-end">
-              <button class="btn ghost" type="button" id="prefill6">+ 6 Players</button>
-              <button class="btn ghost" type="button" id="addPlayer">+ Player</button>
-            </div>
+    <div class="card">
+      <!-- BLOCO 1: ações (criar e acessar logs) -->
+      <section class="block" id="actions">
+        <!-- create log: sem campos visíveis, mantém o botão e funcionalidade -->
+        <form id="createLogForm">
+          <button type="submit" class="btn" id="createBtn">
+            Create New Game Log
+          </button>
+          <div class="loading" id="loadingMessage">Creating your personalized log…</div>
+          <div class="error" id="errorMessage"></div>
+          <div class="success" id="successMessage"></div>
+        </form>
+
+        <div class="divider"><span>or</span></div>
+
+        <!-- acesso a log existente -->
+        <form id="accessLogForm">
+          <div class="input-group">
+            <label for="logId">Existing Log ID (slug)</label>
+            <input type="text" id="logId" placeholder="e.g., abc123xy" maxlength="20"/>
           </div>
-
-          <div id="players"></div>
-
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align-items:center">
-            <span id="supabaseMsg" style="font-size:12px;color:#93a0ad"></span>
-            <button class="btn" type="button" id="clearForm">Clear</button>
-            <button class="btn primary" type="submit">Save Game</button>
-          </div>
+          <button type="submit" class="btn secondary">Access Existing Log</button>
         </form>
       </section>
 
-      <!-- Stats & Charts -->
-      <section class="card" aria-labelledby="statsTitle">
-        <h2 id="statsTitle">Stats & Charts</h2>
-        <div class="stats" id="statsGrid"></div>
-
-        <div class="card" id="secWinners" style="padding:10px;background:#0b121a;border-radius:12px;border-color:#152030">
-          <div class="sec-head">
-            <div class="sec-left">
-              <h2 class="section-title" data-target="winnersChart" style="margin:0">
-                <span class="caret" data-caret-for="winnersChart">▲</span> Top Winners
-              </h2>
-            </div>
-            <button class="btn primary small" id="moreStatsBtn" title="Open detailed stats">View more</button>
-          </div>
-          <div id="winnersChart" class="barchart winners sec-content" aria-expanded="true"></div>
-        </div>
-
-        <div style="height:8px"></div>
-        <div class="card" id="secFactions" style="padding:10px;background:#0b121a;border-radius:12px;border-color:#152030">
-          <div class="sec-head">
-            <div class="sec-left">
-              <h2 class="section-title" data-target="factionsChart" style="margin:0">
-                <span class="caret" data-caret-for="factionsChart">▲</span> Top Factions
-              </h2>
-            </div>
-            <button class="btn primary small" id="factionStatsBtn" title="Open detailed stats">View more</button>
-          </div>
-          <div id="factionsChart" class="barchart sec-content" aria-expanded="true"></div>
-        </div>
-
-        <div style="height:8px"></div>
-        <div class="card" id="secPoints" style="padding:10px;background:#0b121a;border-radius:12px;border-color:#152030">
-          <div class="sec-head">
-            <div class="sec-left">
-              <h2 class="section-title" data-target="pointsChart" style="margin:0">
-                <span class="caret" data-caret-for="pointsChart">▲</span> Total Points - Players
-              </h2>
-            </div>
-          </div>
-          <div id="pointsChart" class="barchart sec-content" aria-expanded="true"></div>
-        </div>
+      <!-- BLOCO 2: destaques (features) -->
+      <section class="block" id="features">
+        <div class="divider"><span>features</span></div>
+        <ul class="features two-col">
+          <li>Clean interface</li>
+          <li>Auto stats / rankings</li>
+          <li>Sharable unique URL</li>
+          <li>Complete match history</li>
+          <li>TI4 + PoK + Keleres</li>
+          <li>Free to use</li>
+        </ul>
       </section>
     </div>
 
-    <section class="card" style="margin-top:14px" aria-labelledby="gamesTitle">
-      <h2 id="gamesTitle">Games Logged</h2>
-      <div class="tools" id="gamesTools" style="margin-bottom:8px">
-        <label class="muted" style="display:flex;align-items:center;gap:6px">Sort by
-          <select id="sortBy"><option value="date" selected>Date</option><option value="duration">Duration</option><option value="players">Players</option></select>
-        </label>
-        <select id="sortDir"><option value="desc" selected>Desc</option><option value="asc">Asc</option></select>
-      </div>
-      <div class="games" id="gamesList"><div class="muted">No games yet. Add your first result on the left.</div></div>
-    </section>
-
-    <footer>
-      <div>Conquer the Galaxy ⭐</div>
-      <div class="footer-note">
-        This project was made by a non-coder.<br>
-        There is no support and your data may vanish at some point.<br>
-        Sorry. = )
-      </div>
-    </footer>
-  </div>
-
-  <!-- Modal -->
-  <div id="modal" aria-hidden="true">
-    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <header><strong id="modalTitle">Top Winners — Stats</strong><button class="close" id="modalClose" aria-label="Close">✕</button></header>
-      <div class="content"><div id="modalChart" class="barchart"></div></div>
+    <!-- Rodapé -->
+    <div class="footer" aria-label="Project disclaimer">
+      <div class="footer-title">Conquer the Galaxy ⭐</div>
+      <div class="footer-text">This project was made by a non-coder.
+There is no support and your data may vanish at some point.
+Sorry. = )</div>
     </div>
   </div>
 
   <script>
-    const MIN_PLAYERS=3, MAX_PLAYERS=8;
+    // === Supabase client (public URL + anon key) ===
+    const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
 
-    const RAW_FACTIONS=[
-      "Nekro Virus","Sardakk N'orr","Naalu Collective","Arborec","Winnu","Universities of Jol-Nar",
-      "Xxcha Kingdom","Yin Brotherhood","Yssaril Tribes","Barony of Letnev","Clan of Saar","Embers of Muaat",
-      "Emirates of Hacan","Federation of Sol","Ghosts of Creuss","L1Z1X Mindnet","Mentak Coalition",
-      "Argent Flight","Empyrean","Mahact Gene-Sorcerers","Naaz-Rokha Alliance","Nomad","Titans of Ul",
-      "Vuil'Raith Cabal","Council Keleres"
-    ];
-    const ALL_FACTIONS=[...new Set(RAW_FACTIONS)].sort((a,b)=>a.localeCompare(b));
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const FACTION_ICON_BASE='./Faction_Icons/';
-    const FACTION_ICON_MAP={
-      "Nekro Virus":"Nekro.png","Sardakk N'orr":"Sardakk.png","Naalu Collective":"Naalu.png","Arborec":"Arborec.png","Winnu":"Winnu.png",
-      "Universities of Jol-Nar":"Jol Nar.png","Xxcha Kingdom":"Xxcha.png","Yin Brotherhood":"Yin.png","Yssaril Tribes":"Yssaril.png",
-      "Barony of Letnev":"Letnev.png","Clan of Saar":"Saar.png","Embers of Muaat":"Muaat.png","Emirates of Hacan":"Hacan.png",
-      "Federation of Sol":"Sol.png","Ghosts of Creuss":"Creuss.png","L1Z1X Mindnet":"L1Z1X.png","Mentak Coalition":"Mentak.png",
-      "Argent Flight":"Argent.png","Empyrean":"Empyrean.png","Mahact Gene-Sorcerers":"Mahact.png","Naaz-Rokha Alliance":"Naaz-Rokha.png",
-      "Nomad":"Nomad.png","Titans of Ul":"Titans.png","Vuil'Raith Cabal":"Vuil'Raith.png","Council Keleres":"Keleres.png"
-    };
+    // DOM elements
+    const createForm      = document.getElementById('createLogForm');
+    const accessForm      = document.getElementById('accessLogForm');
+    const loadingMessage  = document.getElementById('loadingMessage');
+    const errorMessage    = document.getElementById('errorMessage');
+    const successMessage  = document.getElementById('successMessage');
+    const createBtn       = document.getElementById('createBtn');
 
-    const LS_KEY='ti4_game_log_v1';
-    const loadGames=()=>{try{return JSON.parse(localStorage.getItem(LS_KEY)||'[]')}catch(e){return[]}};
-    window.saveGames=(a)=>localStorage.setItem(LS_KEY,JSON.stringify(a));
-    let games=loadGames();
-
-    (function migrateData(){
-      try{
-        const stripThe=s=>(s||'').replace(/^\s*the\s+/i,'');
-        const normalize=(n)=>{let s=stripThe((n||'').trim());
-          if(/^vuil'raith cabal$/i.test(s))s="Vuil'Raith Cabal";
-          if(/^sardakk n'orr$/i.test(s))s="Sardakk N'orr";
-          if(/^universities of jol[-\s]?nar$/i.test(s))s="Universities of Jol-Nar";
-          if(/^l1z1x mindnet$/i.test(s))s="L1Z1X Mindnet";
-          if(/^naaz[-\s]?rokha alliance$/i.test(s))s="Naaz-Rokha Alliance";
-          if(/^council keleres$/i.test(s))s="Council Keleres";
-          return s;
-        };
-        let changed=false;
-        games.forEach(g=>{
-          if(Number.isFinite(g.durationHours) && !Number.isFinite(g.durationMinutes)){
-            g.durationMinutes = Math.round(Number(g.durationHours)*60);
-            delete g.durationHours;
-            changed=true;
-          }
-          g.players.forEach(p=>{
-            const norm=normalize(p.faction);
-            if(norm && norm!==p.faction){ p.faction=norm; changed=true; }
-          });
-        });
-        if(changed) window.saveGames(games);
-      }catch(e){}
-    })();
-
-    const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-    const flashRed=(el)=>{el.classList.add('glow-red');setTimeout(()=>el.classList.remove('glow-red'),650)};
-
-    const gameDate=$('#gameDate'); const gameDurationTime=$('#gameDurationTime'); const playersWrap=$('#players');
-    const addPlayerBtn=$('#addPlayer'); const prefill6Btn=$('#prefill6'); const form=$('#gameForm');
-    const gamesList=$('#gamesList'); const sortBy=$('#sortBy'); const sortDir=$('#sortDir');
-
-    const winnersChart=$('#winnersChart'); const factionsChart=$('#factionsChart'); const pointsChart=$('#pointsChart'); const statsGrid=$('#statsGrid');
-
-    const exportBtn=$('#exportBtn'); const importInput=$('#importInput'); const resetBtn=$('#resetBtn'); const clearFormBtn=$('#clearForm');
-
-    const modal=$('#modal'); const modalClose=$('#modalClose'); const modalChart=$('#modalChart');
-    const moreStatsBtn=$('#moreStatsBtn'); const factionStatsBtn=$('#factionStatsBtn');
-
-    const getFactionIcon=(name)=>FACTION_ICON_MAP[name]?(FACTION_ICON_BASE+FACTION_ICON_MAP[name]):null;
-    const labelWithIconHTML=(label)=>{const url=getFactionIcon(label);return url?`<img class="fac-icon" src="${url}" alt="" title="${label}">${label}`:label};
-    const applyFactionIconToSelect=(sel)=>{const url=getFactionIcon(sel.value); sel.style.backgroundImage=url?`url('${url}')`:'none'};
-
-    const pad2=n=>String(n).padStart(2,'0');
-    const minutesToHHMM=(mins)=>{ if(!Number.isFinite(mins)) return '—'; const h=Math.floor(mins/60), m=Math.round(mins%60); return `${pad2(h)}h ${pad2(m)}m`; };
-    const HHMMtoMinutes=(hhmm)=>{ const [h,m]=String(hhmm||'').split(':').map(Number); if(Number.isFinite(h)&&Number.isFinite(m)) return h*60+m; return NaN; };
-
-    gameDate.valueAsDate=new Date();
-    gameDurationTime.value = '06:00';
-
-    function getAllPlayerNames(){const set=new Set();games.forEach(g=>g.players.forEach(p=>{if(p.name?.trim())set.add(p.name.trim())}));return Array.from(set).sort((a,b)=>a.localeCompare(b))}
-    function createFactionSelect(){const sel=document.createElement('select');sel.required=true;sel.className='faction-select';sel.innerHTML='<option value="" disabled selected>Select faction</option>'+ALL_FACTIONS.map(f=>`<option value="${f}">${f}</option>`).join('');applyFactionIconToSelect(sel);return sel}
-    function createVPSelect(prefVP){const sel=document.createElement('select');sel.setAttribute('data-vp','1');sel.required=true;sel.innerHTML=Array.from({length:15},(_,i)=>`<option value="${i}" ${prefVP==i?'selected':''}>${i} VP</option>`).join('');return sel}
-    function createPlayerRow(pref={}){const row=document.createElement('div');row.className='player-row';
-      const name=document.createElement('input');name.type='text';name.placeholder='Player name';name.required=true;if(pref.name)name.value=pref.name;
-      const listId='namesList';if(!document.getElementById(listId)){const dl=document.createElement('datalist');dl.id=listId;document.body.appendChild(dl)}name.setAttribute('list',listId);
-      const faction=createFactionSelect();if(pref.faction)faction.value=pref.faction;applyFactionIconToSelect(faction);faction.addEventListener('change',()=>{updateFactionOptions();applyFactionIconToSelect(faction)});
-      const vp=createVPSelect(pref.vp??0);
-      const del=document.createElement('button');del.type='button';del.className='btn ghost';del.textContent='Remove';
-      del.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count<=MIN_PLAYERS){flashRed(del);return}row.remove();updateNamesList();updateFactionOptions()};
-      row.append(name,faction,vp,del);playersWrap.appendChild(row);updateFactionOptions();
+    // Helpers
+    function showLoading(show){
+      loadingMessage.style.display = show ? 'block' : 'none';
+      createBtn.disabled = show;
     }
-    function updateNamesList(){const dl=document.getElementById('namesList');if(!dl)return;const names=new Set([...getAllPlayerNames(),...$$('.player-row input[type=text]',playersWrap).map(i=>i.value.trim()).filter(Boolean)]);dl.innerHTML=Array.from(names).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}"></option>`).join('')}
-    function getSelectedFactions(){return $$('.player-row select',playersWrap).filter(s=>!s.hasAttribute('data-vp')).map(s=>s.value).filter(v=>v&&v!=='')}
-    function updateFactionOptions(){const chosen=new Set(getSelectedFactions());$$('.player-row select',playersWrap).forEach(sel=>{if(sel.hasAttribute('data-vp'))return;$$('option',sel).forEach(opt=>{if(!opt.value)return;opt.disabled=chosen.has(opt.value)&&sel.value!==opt.value})})}
-    function ensureMinPlayers(min=MIN_PLAYERS){while($$('.player-row',playersWrap).length<min){createPlayerRow()}} ensureMinPlayers(MIN_PLAYERS);
-    addPlayerBtn.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count>=MAX_PLAYERS){flashRed(addPlayerBtn);return}createPlayerRow();updateNamesList()};
-    prefill6Btn.onclick=()=>{playersWrap.innerHTML='';for(let i=0;i<6;i++)createPlayerRow();updateNamesList();updateFactionOptions()};
-    clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updateNamesList();$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');$$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
-
-    function validateUniqueFactions(players){const s=players.map(p=>p.faction).filter(Boolean);return new Set(s).size===s.length}
-    function computePodiums(players){const scores=Array.from(new Set(players.map(p=>p.vp))).sort((a,b)=>b-a);const group=(score)=>players.map((p,i)=>p.vp===score?i:-1).filter(i=>i!==-1);return{scores,first:scores[0]!==undefined?group(scores[0]):[],second:scores[1]!==undefined?group(scores[1]):[],third:scores[2]!==undefined?group(scores[2]):[]}}
-
-    function computeStatsFrom(data){
-      const byPlayer=new Map(), winsByFaction=new Map();
-      let totalGames=data.length,totalPoints=0,totalParticipants=0,durSum=0,durCount=0;
-      for(const g of data){
-        totalParticipants+=g.players.length; g.players.forEach(p=>{totalPoints+=(p.vp||0)});
-        if(Number.isFinite(g.durationMinutes)){durSum+=g.durationMinutes;durCount++}
-        g.players.forEach(p=>{if(!byPlayer.has(p.name))byPlayer.set(p.name,{games:0,wins:0,points:0});const r=byPlayer.get(p.name);r.games++;r.points+=(p.vp||0)});
-        g.winners.forEach(i=>{const w=g.players[i]; if(!byPlayer.has(w.name))byPlayer.set(w.name,{games:0,wins:0,points:0});byPlayer.get(w.name).wins++;winsByFaction.set(w.faction,(winsByFaction.get(w.faction)||0)+1)})
-      }
-      const byPlayerArr=Array.from(byPlayer,([name,r])=>({name,...r,winRate:r.games?r.wins/r.games:0,avgVP:r.games?r.points/r.games:0}));
-      const winnersRank=byPlayerArr.slice().sort((a,b)=>b.wins-a.wins||b.winRate-a.winRate||a.name.localeCompare(b.name));
-      const pointsRank=byPlayerArr.slice().sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name));
-      const factionsRank=Array.from(winsByFaction,([f,w])=>({faction:f,wins:w})).sort((a,b)=>b.wins-a.wins||a.faction.localeCompare(b.faction));
-      const uniquePlayers=byPlayerArr.length,avgPlayersPerGame=totalGames?(totalParticipants/totalGames):0,avgDurationMinutes=durCount?(durSum/durCount):null;
-      return{totalGames,uniquePlayers,avgPlayersPerGame,avgDurationMinutes,winnersRank,factionsRank,pointsRank}
+    function showError(msg){
+      errorMessage.textContent = msg;
+      errorMessage.style.display = 'block';
     }
-    const computeStats=()=>computeStatsFrom(games);
+    function showSuccess(msg){
+      successMessage.textContent = msg;
+      successMessage.style.display = 'block';
+    }
+    function hideMessages(){
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+    }
 
-    function computeWinningFactionsByPlayer(){const map=new Map();games.forEach(g=>{g.winners.forEach(i=>{const p=g.players[i];if(!p||!p.name)return;if(!map.has(p.name))map.set(p.name,new Set());if(p.faction)map.get(p.name).add(p.faction)})});return map}
+    // Gera valores padrões já que removemos os campos visuais
+    function defaultPlaygroupName(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `Playgroup ${y}-${m}-${day}`;
+    }
 
-    form.addEventListener('submit',(e)=>{
+    // Create new game log (INSERT into public.games and get slug back)
+    createForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
-      const date=gameDate.value||new Date().toISOString().slice(0,10);
-      const durMinutes=HHMMtoMinutes(gameDurationTime.value);
-      if(!Number.isFinite(durMinutes) || durMinutes<=0){ alert('Enter a valid duration (HH:MM).'); return; }
-      const rows=$$('.player-row',playersWrap);
-      const players=rows.map(r=>{
-        const [nameEl,factionEl,vpEl]=[$('input[type=text]',r),$('select:not([data-vp])',r),$('select[data-vp]',r)];
-        return {name:(nameEl.value||'').trim(),faction:factionEl.value,vp:Number(vpEl.value||0)};
-      }).filter(p=>p.name&&p.faction);
 
-      if(players.length<MIN_PLAYERS){alert(`Add at least ${MIN_PLAYERS} players.`);return}
-      if(!validateUniqueFactions(players)){alert('Each faction can only be selected once per game.');return}
+      const name = defaultPlaygroupName();       // valor padrão
+      const creatorName = 'Anonymous';           // valor padrão
 
-      const maxVP=Math.max(...players.map(p=>p.vp||0));
-      const winnerIdx=players.reduce((arr,p,idx)=>{if((p.vp||0)===maxVP)arr.push(idx);return arr},[]);
-      const id=(crypto?.randomUUID?.()||('g_'+Date.now()+Math.random().toString(16).slice(2)));
-      games.push({id,date,durationMinutes:durMinutes,players,winners:winnerIdx}); window.saveGames(games);
+      showLoading(true);
+      hideMessages();
 
-      render();
-      $$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');
-      $$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');
-      updateNamesList(); updateFactionOptions();
+      try{
+        const { data, error } = await supabase
+          .from('games')
+          .insert([ { name, creator_name: creatorName } ])
+          .select('slug')
+          .single();
+
+        if(error) throw error;
+
+        showLoading(false);
+        showSuccess('Log created successfully! Redirecting…');
+
+        const slug = data.slug;
+        setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 1200);
+
+      }catch(err){
+        console.error(err);
+        showLoading(false);
+        showError('Error creating the log. Please try again.');
+      }
     });
 
-    function renderKPIs(s){
-      const statsGrid=$('#statsGrid');
-      statsGrid.innerHTML='';
-      const kpi=(label,value,sub='')=>{ const el=document.createElement('div'); el.className='stat';
-        el.innerHTML=`<div class="muted">${label}</div><div class="kpi">${value}</div>${sub?`<div class=\\"muted\\" style=\\"font-size:.8rem\\">${sub}</div>`:''}`;
-        statsGrid.appendChild(el);
-      };
-      kpi('Games Logged',s.totalGames);
-      kpi('Unique Players',s.uniquePlayers);
-      kpi('Avg Players / Game',s.avgPlayersPerGame.toFixed(2));
-      kpi('Avg Game Duration', s.avgDurationMinutes!=null ? minutesToHHMM(s.avgDurationMinutes) : '—');
-    }
+    // Access existing log (SELECT by slug)
+    accessForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const slug = document.getElementById('logId').value.trim();
 
-    function renderBarChart(container, rows, labelKey, valueKey, maxItems=10){
-      container.innerHTML = '';
-      if(!rows.length){ container.innerHTML = '<div class="muted">No data yet.</div>'; return }
-      const top = rows.slice(0, maxItems); const max = Math.max(...top.map(r=>Number(r[valueKey])||0), 1);
-      for(const r of top){
-        const bar = document.createElement('div'); bar.className='bar'; bar.innerHTML = `
-          <div class="meta">
-            <span class="label">${labelWithIconHTML(r[labelKey])}</span>
-            <div class="track"><div class="fill" style="width:${(100*(Number(r[valueKey])||0)/max).toFixed(1)}%"></div></div>
-          </div>
-          <div class="value">${r[valueKey]}</div>`;
-        container.appendChild(bar);
+      if(!slug){
+        showError('Please enter a log ID (slug).');
+        return;
       }
-    }
 
-    function renderWinnersChart(container,winnersRank){
-      container.innerHTML = '';
-      if(!winnersRank.length){ container.innerHTML = '<div class="muted">No data yet.</div>'; return }
-      const winFac = computeWinningFactionsByPlayer();
-      const top = winnersRank.slice(0, 10);
-      top.forEach(r=>{
-        const icons = Array.from(winFac.get(r.name)||[]).map(f=>{
-          const src = getFactionIcon(f); return src? `<img class="fac-icon sm" src="${src}" alt="" title="${f}">` : '';
-        }).join('');
-        const row = document.createElement('div'); row.className='bar';
-        row.innerHTML = `
-          <div class="meta">
-            <span class="label">${r.name}<span class="win-icons">${icons}</span></span>
-          </div>
-          <div class="value">${r.wins}</div>`;
-        container.appendChild(row);
-      });
-    }
+      showLoading(true);
+      hideMessages();
 
-    function formatWinnersWithFactions(g){return g.winners.map(i=>{const p=g.players[i];return `${p.name} – ${p.faction}`})}
-    function getLongestShortestDurations(){
-      const ds=games.map(g=>g.durationMinutes).filter(d=>Number.isFinite(d));
-      if(!ds.length) return {max:null,min:null};
-      return { max: Math.max(...ds), min: Math.min(...ds) };
-    }
-    function sortGames(arr){
-      const by=sortBy?.value||'date'; const dir=(sortDir?.value||'desc')==='asc'?1:-1;
-      return arr.slice().sort((a,b)=>{
-        let av, bv;
-        if(by==='date'){ av=new Date(a.date).getTime(); bv=new Date(b.date).getTime(); }
-        else if(by==='duration'){ av=Number(a.durationMinutes)||-Infinity; bv=Number(b.durationMinutes)||-Infinity; }
-        else if(by==='players'){ av=a.players.length; bv=b.players.length; }
-        else { av=0; bv=0; }
-        return (av - bv) * dir;
-      });
-    }
+      try{
+        const { data, error } = await supabase
+          .from('games')
+          .select('slug')
+          .eq('slug', slug)
+          .maybeSingle();
 
-    function renderGames(){
-      const gamesList=$('#gamesList');
-      if(!games.length){gamesList.innerHTML='<div class="muted">No games yet. Add your first result on the left.</div>';return}
-      gamesList.innerHTML='';
-      const {max:longest,min:shortest}=getLongestShortestDurations();
-      const frag=document.createDocumentFragment();
-      const ordered=sortGames(games);
-      for(const g of ordered){
-        const winners=formatWinnersWithFactions(g);
-        const sum=document.createElement('details');
-        const podium=computePodiums(g.players);
-        const makeBadge=(icon,arr,vp)=>arr.length?`<span class="badge" title="${icon}">${icon} ${arr.map(i=>g.players[i].name).join(', ')} (${vp} VP)</span>`:'';
-        const firstBadge=g.winners.length?`<span class="badge" title="Winner(s)">🏆 ${winners.join(', ')}</span>`:'';
-        const secondBadge=makeBadge('🥈',podium.second,podium.scores[1]);
-        const thirdBadge =makeBadge('🥉',podium.third ,podium.scores[2]);
-        const pcount=`<span class="badge" title="Players">👥 ${g.players.length}</span>`;
-        const d=`<span class="badge">📅 ${g.date}</span>`;
-        const durMins = Number(g.durationMinutes);
-        const dur=`<span class="badge" title="Duration">⏱ ${minutesToHHMM(durMins)}</span>`;
-        const longestTag = (longest!=null && durMins===longest) ? `<span class="badge tag-longest">Longest Game</span>` : '';
-        const shortestTag= (shortest!=null && durMins===shortest)? `<span class="badge tag-shortest">Shortest Game</span>` : '';
-        sum.innerHTML = `<summary><div class="left">${firstBadge} ${secondBadge} ${thirdBadge} ${pcount} ${d} ${dur} ${longestTag} ${shortestTag}</div><div style="display:flex;gap:8px">
-          <button class="btn ghost" data-del="${g.id}">Delete</button></div></summary>`;
+        if(error) throw error;
+        if(!data){ throw new Error('Log not found'); }
 
-        const ul=document.createElement('div'); ul.style.marginTop='10px';
-        const sortedPlayers=g.players.slice().sort((a,b)=>(b.vp||0)-(a.vp||0));
-        for(const p of sortedPlayers){
-          const line=document.createElement('div'); line.style.display='grid'; line.style.gridTemplateColumns='1.2fr 1.3fr .5fr'; line.style.gap='8px'; line.style.alignItems='center'; line.style.padding='6px 0';
-          const ficon=getFactionIcon(p.faction);
-          line.innerHTML=`<div>${p.name}</div><div class="muted">${ficon?`<img class="fac-icon sm" src="${ficon}" alt="" title="${p.faction}">`:''}${p.faction}</div><div style="text-align:right;font-variant-numeric:tabular-nums">${p.vp} VP</div>`;
-          ul.appendChild(line);
-        }
-        sum.appendChild(ul); frag.appendChild(sum);
+        showLoading(false);
+        showSuccess('Log found! Redirecting…');
+        setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 900);
+
+      }catch(err){
+        console.error(err);
+        showLoading(false);
+        showError('Log not found. Please check the ID and try again.');
       }
-      gamesList.appendChild(frag);
-
-      $$('button[data-del]').forEach(btn=>{ btn.onclick = ()=>{ const id=btn.getAttribute('data-del'); games = games.filter(g=>g.id!==id); window.saveGames(games); render(); } });
-    }
-
-    function render(){
-      updateNamesList();
-      const s=computeStats();
-      $('#statsGrid').innerHTML='';
-      renderKPIs(s);
-      renderWinnersChart(winnersChart, s.winnersRank);
-      renderBarChart(factionsChart, s.factionsRank.map(r=>({label:r.faction, value:r.wins})), 'label','value');
-      renderBarChart(pointsChart, s.pointsRank.map(r=>({label:r.name, value:r.points})), 'label','value');
-      renderGames();
-      refreshCaretsFromState();
-    }
-
-    /* ===== Pop-up: Top Winners ===== */
-    function openWinnersModal(){
-      $('#modalTitle').textContent='Top Winners — Stats';
-      modalChart.innerHTML='';
-      modalChart.classList.remove('factions');
-
-      const s=computeStats(); const winFac=computeWinningFactionsByPlayer();
-      const rows=s.winnersRank.map(r=>({name:r.name,wins:r.wins,games:r.games,winRate:(r.winRate*100)||0,avgVP:r.avgVP||0}));
-      const max=Math.max(...rows.map(r=>r.wins||0),1);
-      rows.slice(0,50).forEach(r=>{
-        const pct=(100*(r.wins||0)/max).toFixed(1);
-        const icons=Array.from(winFac.get(r.name)||[]).map(f=>{const src=getFactionIcon(f);return src?`<img class="fac-icon sm" src="${src}" alt="" title="${f}">`:''}).join('');
-        const row=document.createElement('div'); row.className='wrow';
-        row.innerHTML=`<div class="name" title="${r.name}">${r.name}</div>
-          <div class="icons">${icons}</div>
-          <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-          <div class="stats"><strong>${r.wins||0} W</strong> · ${r.games||0} games · ${r.winRate.toFixed(0)}% WR · ${r.avgVP.toFixed(1)} VP/g</div>`;
-        modalChart.appendChild(row);
-      });
-      modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
-    }
-
-    /* ===== Pop-up: Top Factions ===== */
-    function openFactionsModal(){
-      $('#modalTitle').textContent='Top Factions — Stats';
-      modalChart.innerHTML='';
-      modalChart.classList.add('factions');
-
-      const facWins=new Map(), facApps=new Map();
-      games.forEach(g=>{
-        g.players.forEach(p=>{ if(p.faction) facApps.set(p.faction,(facApps.get(p.faction)||0)+1); });
-        g.winners.forEach(i=>{ const f=g.players[i].faction; if(f) facWins.set(f,(facWins.get(f)||0)+1); });
-      });
-
-      const rows=Array.from(facApps.keys()).map(f=>{
-        const wins=facWins.get(f)||0, plays=facApps.get(f)||0;
-        return {faction:f, wins, plays, wr: plays? (wins/plays)*100 : 0};
-      }).sort((a,b)=> b.wins-a.wins || b.wr-a.wr || a.faction.localeCompare(b.faction));
-
-      const top=rows.slice(0,50);
-      const max=Math.max(...top.map(r=>r.wins),1);
-
-      top.forEach(r=>{
-        const pct=(100*r.wins/max).toFixed(1);
-        const row=document.createElement('div'); row.className='frow';
-        const icon=getFactionIcon(r.faction);
-        row.innerHTML=`
-          <div class="ficon-wrap">${icon?`<img class="ficon" src="${icon}" alt="" title="${r.faction}">`:''}</div>
-          <div class="fname" title="${r.faction}">${r.faction}</div>
-          <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-          <div class="stats"><strong>${r.wins} W</strong> · ${r.plays} games · ${r.wr.toFixed(0)}% WR</div>
-        `;
-        modalChart.appendChild(row);
-      });
-
-      modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
-    }
-
-    // Botões View more
-    moreStatsBtn?.addEventListener('click', ()=>{ if(games.length) openWinnersModal(); });
-    factionStatsBtn?.addEventListener('click', ()=>{ if(games.length) openFactionsModal(); });
-
-    // Fechar modal
-    modalClose.addEventListener('click', ()=>{ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); });
-    modal.addEventListener('click',(e)=>{ if(e.target===modal){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); }});
-    window.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal.classList.contains('show')){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); }});
-
-    // Colapsadores + carets
-    function setSectionCollapsed(targetId, collapsed){
-      const sec = document.getElementById(targetId)?.closest('.card'); if(!sec) return;
-      const content = document.getElementById(targetId);
-      const caret = document.querySelector(`.caret[data-caret-for="${targetId}"]`);
-      if(collapsed){
-        sec.classList.add('collapsed');
-        localStorage.setItem('collapse_'+targetId,'1');
-        content?.setAttribute('aria-expanded','false');
-        if(caret) caret.textContent='▼';
-      }else{
-        sec.classList.remove('collapsed');
-        localStorage.setItem('collapse_'+targetId,'0');
-        content?.setAttribute('aria-expanded','true');
-        if(caret) caret.textContent='▲';
-      }
-    }
-    function refreshCaretsFromState(){
-      document.querySelectorAll('.section-title').forEach(h=>{
-        const target = h.getAttribute('data-target');
-        const collapsed = localStorage.getItem('collapse_'+target)==='1';
-        setSectionCollapsed(target, collapsed);
-      });
-    }
-    document.querySelectorAll('.section-title').forEach(h=>{
-      const target = h.getAttribute('data-target');
-      if(localStorage.getItem('collapse_'+target)==='1') setSectionCollapsed(target,true);
-      h.addEventListener('click', ()=>{
-        const isCollapsed = (localStorage.getItem('collapse_'+target)==='1');
-        setSectionCollapsed(target, !isCollapsed);
-      });
     });
 
-    // Import/Export/Reset
-    exportBtn.onclick=()=>{const data=JSON.stringify(games,null,2);const blob=new Blob([data],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ti4_games.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)};
-    importInput.onchange=(e)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const incoming=JSON.parse(reader.result);if(!Array.isArray(incoming))throw new Error('Invalid file');const ids=new Set(games.map(g=>g.id));let added=0;for(const g of incoming){if(g&&typeof g==='object'&&g.id&&!ids.has(g.id)){
-              if(Number.isFinite(g.durationHours) && !Number.isFinite(g.durationMinutes)){ g.durationMinutes=Math.round(Number(g.durationHours)*60); delete g.durationHours; }
-              games.push(g);ids.add(g.id);added++;
-            }}window.saveGames(games);render();alert(`Imported ${added} game(s).`)}catch(err){alert('Failed to import: '+err.message)}finally{importInput.value=''}};reader.readAsText(file)};
-    resetBtn.onclick=()=>{if(confirm('Delete ALL logged games? This cannot be undone.')){games=[];window.saveGames(games);render()}};
-
-    // Atalhos/sort
-    window.addEventListener('keydown',(ev)=>{if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='s'){ev.preventDefault();form.requestSubmit()}});
-    sortBy?.addEventListener('change',render); sortDir?.addEventListener('change',render);
-
-    // Render inicial
-    render();
-  </script>
-
-  <script>
-  /* ======= Supabase sync (inalterado fora dos pop-ups) ======= */
-  const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
-  const supabase = window.supabase?.createClient
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    : null;
-
-  const __slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1] || null;
-  if (__slug) {
-    const el = document.getElementById('slugDisplay');
-    if (el) el.textContent = '— ' + __slug;
-  }
-  const __flash = (msg, ok=false)=>{
-    const el = document.getElementById('supabaseMsg');
-    if(!el) return;
-    el.textContent = msg;
-    el.style.color = ok ? '#10b981' : '#ef4444';
-    setTimeout(()=>{ el.textContent=''; el.style.color='#93a0ad'; }, 1500);
-  };
-
-  async function __getGameIdBySlug(){
-    const { data, error } = await supabase.from('games').select('id').eq('slug', __slug).maybeSingle();
-    if(error || !data) throw new Error('Log not found for slug');
-    return data.id;
-  }
-
-  async function __loadFromSupabase(){
-    if(!supabase || !__slug) return;
-    try{
-      const gameId = await __getGameIdBySlug();
-      const { data, error } = await supabase
-        .from('events')
-        .select('payload, created_at')
-        .eq('game_id', gameId)
-        .eq('type', 'ADD_GAME_ENTRY')
-        .order('created_at', { ascending: true });
-      if(error) throw error;
-      const arr = (data || []).map(r => r.payload || {}).filter(x => x && x.id);
-      games = Array.isArray(arr) ? arr : [];
-      window.games = games;
-      if (typeof window.render === 'function') window.render();
-      __flash('Loaded from Supabase', true);
-    }catch(e){ console.warn(e); __flash('Could not load from Supabase'); }
-  }
-
-  (function __overrideSave(){
-    if(!supabase || !__slug) return;
-    let __syncTimer = null;
-    window.saveGames = function(arr){
-      clearTimeout(__syncTimer);
-      __syncTimer = setTimeout(async ()=>{
-        try{
-          const gameId = await __getGameIdBySlug();
-          await supabase.from('events').delete().eq('game_id', gameId).eq('type', 'ADD_GAME_ENTRY');
-          const rows = (arr||[]).map(g=>({ game_id: gameId, type:'ADD_GAME_ENTRY', payload:g }));
-          if(rows.length){ await supabase.from('events').insert(rows); }
-          __flash('Saved to Supabase', true);
-        }catch(e){ console.error(e); __flash('Save failed (Supabase)'); }
-      }, 300);
-    };
-  })();
-
-  (function __subscribeRealtime(){
-    if(!supabase || !__slug) return;
-    supabase.channel('rt:log')
-      .on('postgres_changes', { event:'*', schema:'public', table:'events' }, (payload)=>{
-        if(payload?.new?.type === 'ADD_GAME_ENTRY'){ __loadFromSupabase(); }
-      })
-      .subscribe();
-  })();
-
-  (async function init(){
-    if(__slug) await __loadFromSupabase();
-  })();
+    // If URL already contains /log/<id>, reflect it on the page (cosmetic)
+    const urlPath = window.location.pathname;
+    const match = urlPath.match(/\/log\/([a-z0-9]{6,12})/i);
+    if(match){
+      const slug = match[1];
+      const subtitle = document.querySelector('.subtitle');
+      if (subtitle) subtitle.textContent = `Accessing log: ${slug}`;
+      const logIdField = document.getElementById('logId');
+      if (logIdField) logIdField.value = slug;
+    }
   </script>
 </body>
 </html>
