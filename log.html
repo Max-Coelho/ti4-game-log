@@ -398,7 +398,19 @@ Sorry. = )
     }
     const computeStats=()=>computeStatsFrom(games);
 
-    function computeWinningFactionsByPlayer(){const map=new Map();games.forEach(g=>{g.winners.forEach(i=>{const p=g.players[i];if(!p||!p.name)return;if(!map.has(p.name))map.set(p.name,new Set());if(p.faction)map.get(p.name).add(p.faction)})});return map}
+    /* ===== MODIFICAÇÃO SOLICITADA: agora retorna ícones com repetições (um por vitória) ===== */
+    function computeWinningFactionsByPlayer(){
+      const map=new Map();
+      games.forEach(g=>{
+        g.winners.forEach(i=>{
+          const p=g.players[i];
+          if(!p||!p.name) return;
+          if(!map.has(p.name)) map.set(p.name, []);
+          if(p.faction) map.get(p.name).push(p.faction); // adiciona repetido, um por vitória
+        });
+      });
+      return map;
+    }
 
     form.addEventListener('submit',(e)=>{
       e.preventDefault();
@@ -539,7 +551,7 @@ Sorry. = )
       refreshCaretsFromState();
     }
 
-    /* ===== Modal: Top Winners (mantido) ===== */
+    /* ===== Modal: Top Winners (mantido visual; agora ícones repetem por vitória) ===== */
     function openWinnersModal(){
       $('#modalTitle').textContent='Top Winners — Stats';
       modalChart.innerHTML='';
