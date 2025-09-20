@@ -36,22 +36,24 @@
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
-    .subtitle{ color:var(--muted); font-size:1.1rem; margin-bottom:40px; line-height:1.5; }
+    .subtitle{ color:var(--muted); font-size:1.1rem; margin-bottom:24px; line-height:1.5; }
 
-    /* NOVO BLOCO DE ICONES */
+    /* ====== BARRA ÚNICA DE ÍCONES ====== */
     .faction-icons {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-      gap: 8px;
-      max-width: 500px;
-      margin-bottom: 24px;
+      width:100%;
+      max-width:500px;           /* mesma largura do card */
+      display:flex;
+      flex-wrap:nowrap;          /* não quebrar linha */
+      justify-content:center;    /* centraliza dentro da largura total */
+      gap:4px;                   /* espaço entre ícones */
+      margin:0 auto 24px;        /* acima do card */
     }
-    .faction-icons img {
-      width: 100%;
-      height: auto;
-      max-width: 40px;
-      display: block;
-      margin: 0 auto;
+    .faction-icons img{
+      width:16px;                /* pequeno para caber todos */
+      height:auto;
+      display:block;
+      flex:0 0 auto;             /* impede esticar/encolher */
+      filter: drop-shadow(0 0 1px rgba(0,0,0,.35));
     }
 
     .card{
@@ -118,15 +120,8 @@
       line-height:1.5;
       background: transparent;
     }
-    .footer-title{
-      font-weight:700;
-      font-size:0.95rem;
-      margin-bottom:4px;
-    }
-    .footer-text{
-      font-size:0.85rem;
-      white-space:pre-line;
-    }
+    .footer-title{ font-weight:700; font-size:0.95rem; margin-bottom:4px; }
+    .footer-text{ font-size:0.85rem; white-space:pre-line; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -138,17 +133,17 @@
       Share the unique URL with your friends and track your galactic achievements together!
     </p>
 
-    <!-- FAIXA DE ICONES -->
-    <div class="faction-icons">
+    <!-- LINHA ÚNICA DE ÍCONES (acima do card) -->
+    <div class="faction-icons" aria-label="All factions">
       <img src="Faction_Icons/Arborec.png" alt="Arborec"/>
       <img src="Faction_Icons/Argent.png" alt="Argent"/>
       <img src="Faction_Icons/Creuss.png" alt="Creuss"/>
       <img src="Faction_Icons/Empyrean.png" alt="Empyrean"/>
       <img src="Faction_Icons/Hacan.png" alt="Hacan"/>
       <img src="Faction_Icons/Jol Nar.png" alt="Jol Nar"/>
-      <img src="Faction_Icons/Keleres.png" alt="Keleres"/>
+      <img src="Faction_Icons/Keleres.png" alt="Council Keleres"/>
       <img src="Faction_Icons/L1Z1X.png" alt="L1Z1X"/>
-      <img src="Faction_Icons/Letnev.png" alt="Letnev"/>
+      <img src="Faction_Icons/Letnev.png" alt="Barony of Letnev"/>
       <img src="Faction_Icons/Mahact.png" alt="Mahact"/>
       <img src="Faction_Icons/Mentak.png" alt="Mentak"/>
       <img src="Faction_Icons/Muaat.png" alt="Muaat"/>
@@ -157,9 +152,9 @@
       <img src="Faction_Icons/Nekro.png" alt="Nekro"/>
       <img src="Faction_Icons/Nomad.png" alt="Nomad"/>
       <img src="Faction_Icons/Saar.png" alt="Saar"/>
-      <img src="Faction_Icons/Sardakk.png" alt="Sardakk"/>
+      <img src="Faction_Icons/Sardakk.png" alt="Sardakk N'orr"/>
       <img src="Faction_Icons/Sol.png" alt="Sol"/>
-      <img src="Faction_Icons/Titans.png" alt="Titans"/>
+      <img src="Faction_Icons/Titans.png" alt="Titans of Ul"/>
       <img src="Faction_Icons/Vuil'Raith.png" alt="Vuil'Raith"/>
       <img src="Faction_Icons/Winnu.png" alt="Winnu"/>
       <img src="Faction_Icons/Xxcha.png" alt="Xxcha"/>
@@ -168,7 +163,7 @@
     </div>
 
     <div class="card">
-      <!-- BLOCO 1: ações -->
+      <!-- BLOCO 1: ações (criar e acessar logs) -->
       <section class="block" id="actions">
         <form id="createLogForm">
           <button type="submit" class="btn" id="createBtn">
@@ -190,7 +185,7 @@
         </form>
       </section>
 
-      <!-- BLOCO 2: destaques -->
+      <!-- BLOCO 2: destaques (features) -->
       <section class="block" id="features">
         <div class="divider"><span>features</span></div>
         <ul class="features two-col">
@@ -204,7 +199,8 @@
       </section>
     </div>
 
-    <div class="footer">
+    <!-- Rodapé -->
+    <div class="footer" aria-label="Project disclaimer">
       <div class="footer-title">Conquer the Galaxy ⭐</div>
       <div class="footer-text">This project was made by a non-coder.
 There is no support and your data may vanish at some point.
@@ -212,12 +208,111 @@ Sorry. = )</div>
     </div>
   </div>
 
-  <!-- JS igual ao anterior -->
   <script>
+    // === Supabase client (public URL + anon key) ===
     const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOi...';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
+
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    /* ... resto do código igual ... */
+
+    // DOM elements
+    const createForm      = document.getElementById('createLogForm');
+    const accessForm      = document.getElementById('accessLogForm');
+    const loadingMessage  = document.getElementById('loadingMessage');
+    const errorMessage    = document.getElementById('errorMessage');
+    const successMessage  = document.getElementById('successMessage');
+    const createBtn       = document.getElementById('createBtn');
+
+    function showLoading(show){
+      loadingMessage.style.display = show ? 'block' : 'none';
+      createBtn.disabled = show;
+    }
+    function showError(msg){
+      errorMessage.textContent = msg;
+      errorMessage.style.display = 'block';
+    }
+    function showSuccess(msg){
+      successMessage.textContent = msg;
+      successMessage.style.display = 'block';
+    }
+    function hideMessages(){
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+    }
+    function defaultPlaygroupName(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `Playgroup ${y}-${m}-${day}`;
+    }
+
+    // Create new game log
+    createForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const name = defaultPlaygroupName();
+      const creatorName = 'Anonymous';
+
+      showLoading(true);
+      hideMessages();
+
+      try{
+        const { data, error } = await supabase
+          .from('games')
+          .insert([ { name, creator_name: creatorName } ])
+          .select('slug')
+          .single();
+        if(error) throw error;
+
+        showLoading(false);
+        showSuccess('Log created successfully! Redirecting…');
+        const slug = data.slug;
+        setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 1200);
+      }catch(err){
+        console.error(err);
+        showLoading(false);
+        showError('Error creating the log. Please try again.');
+      }
+    });
+
+    // Access existing log
+    accessForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const slug = document.getElementById('logId').value.trim();
+      if(!slug){ showError('Please enter a log ID (slug).'); return; }
+
+      showLoading(true);
+      hideMessages();
+
+      try{
+        const { data, error } = await supabase
+          .from('games')
+          .select('slug')
+          .eq('slug', slug)
+          .maybeSingle();
+        if(error) throw error;
+        if(!data){ throw new Error('Log not found'); }
+
+        showLoading(false);
+        showSuccess('Log found! Redirecting…');
+        setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 900);
+      }catch(err){
+        console.error(err);
+        showLoading(false);
+        showError('Log not found. Please check the ID and try again.');
+      }
+    });
+
+    // Cosmetic: reflect /log/<id> in the UI
+    const urlPath = window.location.pathname;
+    const match = urlPath.match(/\/log\/([a-z0-9]{6,12})/i);
+    if(match){
+      const slug = match[1];
+      const subtitle = document.querySelector('.subtitle');
+      if (subtitle) subtitle.textContent = `Accessing log: ${slug}`;
+      const logIdField = document.getElementById('logId');
+      if (logIdField) logIdField.value = slug;
+    }
   </script>
 </body>
 </html>
