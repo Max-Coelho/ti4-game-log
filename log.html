@@ -92,9 +92,9 @@
     #winnersChart.winners .label{flex:0 0 auto;max-width:none}
     #winnersChart.winners .track{min-width:100px}
 
-    /* ===================== */
-    /* Modal base — AJUSTADO */
-    /* ===================== */
+    /* ========================= */
+    /* MODAL — AJUSTE RESPONSIVO */
+    /* ========================= */
     #modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay);z-index:50}
     #modal.show{display:flex}
     .dialog{
@@ -104,77 +104,92 @@
       max-height:92vh;
       overflow:auto;
       box-shadow:0 20px 60px rgba(0,0,0,.5);
-      /* evitar corte/overflow horizontal no conteúdo interno */
-      min-width:0;
+      min-width:0;                 /* impede overflow horizontal */
     }
-    /* Cabeçalho dos pop-ups: fundo #68CBD4 e título centralizado */
     .dialog header{
-      position:sticky; top:0; z-index:1; /* fica visível ao rolar */
+      position:sticky; top:0; z-index:1;
       display:flex;align-items:center;justify-content:center;
       padding:14px;border-bottom:1px solid var(--border);
       background:#68CBD4;
     }
     .dialog header strong{color:#0b0f14;font-weight:800;text-align:center}
     .dialog header .close{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer}
-    .dialog .content{padding:14px;overflow-x:hidden}       /* sem rolagem horizontal */
-    #modalChart{min-width:0;overflow-x:hidden}            /* sem rolagem horizontal */
+    .dialog .content{padding:14px;overflow-x:hidden}   /* nunca rolar na horizontal */
+    #modalChart{min-width:0;overflow-x:hidden}
 
-    @media (max-width:560px){
-      .dialog{width:98vw;max-height:94vh;border-radius:12px}
-      .dialog .content{padding:12px}
+    /* —— MODO MOBILE: preencher quase toda a tela, sem bordas — */
+    @media (max-width:768px){
+      .dialog{
+        width:100vw;                 /* lado a lado, tela cheia */
+        max-height:calc(100svh - 0px);
+        border-radius:0;             /* encosta nas bordas */
+      }
+      .dialog .content{padding:12px 10px 16px 10px}
     }
 
-    /* ===== Winners modal (layout responsivo) — AJUSTADO =====
-       Colunas: Nome | Ícones | Barra elástica | Métricas (auto) */
+    /* ===== Winners modal (grid elástico, tudo na mesma linha lógica) */
     #modalChart .wrow{
       display:grid;
-      grid-template-columns: minmax(8ch,12ch) minmax(90px,22vw) minmax(140px,1fr) auto;
+      grid-template-columns:
+        minmax(9ch, 16ch)             /* Nome */
+        minmax(84px, 28vw)            /* Ícones (pode quebrar em 2 linhas internas) */
+        minmax(140px, 1fr)            /* Barra (%) fluida */
+        auto;                         /* Métricas */
       align-items:center;
       column-gap:16px;
-      padding:6px 0;
+      padding:8px 0;
       border-bottom:1px solid rgba(255,255,255,.06);
-      min-width:0; /* evita overflow horizontal */
+      min-width:0;
     }
     #modalChart .wrow:last-child{border-bottom:none}
-    #modalChart .name{max-width:12ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #modalChart .name{max-width:16ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #modalChart .icons{
-      display:grid;
-      grid-auto-flow:column;
-      grid-auto-columns:18px;
-      gap:6px;
-      align-items:center;
+      display:flex; flex-wrap:wrap; gap:6px; align-items:center;
       min-width:0;
-      overflow:hidden; /* se houver muitos ícones, eles não estouram horizontalmente */
     }
-    #modalChart .icons img{width:16px;height:16px}
+    #modalChart .icons img{width:16px;height:16px;object-fit:contain}
     #modalChart .track{
-      height:18px;background:#0b121a;border:1px solid var(--border);border-radius:999px;position:relative;width:auto; /* FLUIDO */
-      min-width:0;
+      height:18px;background:#0b121a;border:1px solid var(--border);
+      border-radius:999px;position:relative;width:auto;min-width:0;
     }
     #modalChart .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--bar),var(--accent))}
-    #modalChart .stats{font-size:.9rem;color:var(--muted);text-align:right;white-space:nowrap}
+    #modalChart .stats{font-size:.92rem;color:var(--muted);text-align:right;white-space:nowrap}
 
-    @media (max-width:920px){
+    /* Mobile: dar mais espaço para barra e métricas */
+    @media (max-width:768px){
       #modalChart .wrow{
-        grid-template-columns: minmax(8ch,11ch) minmax(80px,24vw) minmax(120px,1fr) auto;
-        column-gap:12px;
-      }
-    }
-    @media (max-width:560px){
-      #modalChart .wrow{
-        grid-template-columns: minmax(8ch,10ch) minmax(72px,26vw) minmax(110px,1fr) auto;
+        grid-template-columns:
+          minmax(8ch, 14ch)
+          minmax(80px, 34vw)
+          minmax(42vw, 1fr)
+          auto;
         column-gap:10px;
       }
+      #modalChart .stats{font-size:.9rem}
+    }
+    @media (max-width:480px){
+      #modalChart .wrow{
+        grid-template-columns:
+          minmax(8ch, 13ch)
+          minmax(74px, 36vw)
+          minmax(44vw, 1fr)
+          auto;
+        column-gap:8px;
+      }
+      #modalChart .stats{font-size:.86rem}
     }
 
-    /* ===== Factions modal — AJUSTADO =====
-       Ícone (24px) | Nome (22ch) | Barra FLUIDA | Métricas (auto) */
+    /* ===== Factions modal (mesma lógica, nome 22ch) */
     #modalChart.factions .frow{
       display:grid;
-      grid-template-columns: 24px minmax(16ch,22ch) minmax(140px,1fr) auto;
+      grid-template-columns:
+        24px                        /* Ícone */
+        minmax(16ch, 22ch)          /* Nome fixado a 22ch no teto */
+        minmax(140px, 1fr)          /* Barra fluida */
+        auto;                       /* Métricas */
       align-items:center;
       column-gap:16px;
-      padding:6px 0;
+      padding:8px 0;
       border-bottom:1px solid rgba(255,255,255,.06);
       min-width:0;
     }
@@ -182,26 +197,36 @@
     #modalChart.factions .ficon{width:18px;height:18px;object-fit:contain}
     #modalChart.factions .fname{max-width:22ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
     #modalChart.factions .track{
-      height:18px;background:#0b121a;border:1px solid var(--border);border-radius:999px;position:relative;width:auto; /* FLUIDO */
-      min-width:0;
+      height:18px;background:#0b121a;border:1px solid var(--border);
+      border-radius:999px;position:relative;width:auto;min-width:0;
     }
     #modalChart.factions .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--bar),var(--accent))}
-    #modalChart.factions .stats{font-size:.9rem;color:var(--muted);text-align:right;white-space:nowrap}
+    #modalChart.factions .stats{font-size:.92rem;color:var(--muted);text-align:right;white-space:nowrap}
 
-    @media (max-width:920px){
+    @media (max-width:768px){
       #modalChart.factions .frow{
-        grid-template-columns: 24px minmax(16ch,22ch) minmax(120px,1fr) auto;
-        column-gap:12px;
-      }
-    }
-    @media (max-width:560px){
-      #modalChart.factions .frow{
-        grid-template-columns: 24px minmax(14ch,22ch) minmax(110px,1fr) auto;
+        grid-template-columns:
+          24px
+          minmax(14ch, 22ch)
+          minmax(48vw, 1fr)
+          auto;
         column-gap:10px;
       }
+      #modalChart.factions .stats{font-size:.9rem}
+    }
+    @media (max-width:480px){
+      #modalChart.factions .frow{
+        grid-template-columns:
+          24px
+          minmax(13ch, 22ch)
+          minmax(52vw, 1fr)
+          auto;
+        column-gap:8px;
+      }
+      #modalChart.factions .stats{font-size:.86rem}
     }
 
-    /* Ajustes adicionais preservados de versões anteriores */
+    /* (restante inalterado) */
     .games button.btn.ghost[data-del]:hover{ border-color: var(--danger) !important; }
     footer{ margin-top:36px; text-align:center; }
     footer .footer-note{ max-width:960px; margin:8px auto 0; font-size:.85rem; color:var(--muted); line-height:1.4; }
@@ -506,7 +531,7 @@ Sorry. = )
       }
     }
 
-    /* ===== Top Winners (na seção Stats & Charts) — sem barras ===== */
+    /* ===== Top Winners (na seção Stats & Charts) — sem barras) ===== */
     function renderWinnersChart(container,winnersRank){
       container.innerHTML = '';
       if(!winnersRank.length){ container.innerHTML = '<div class="muted">No data yet.</div>'; return }
@@ -593,10 +618,12 @@ Sorry. = )
       refreshCaretsFromState();
     }
 
-    /* ===== Modal: Top Winners (mantido, com CSS responsivo) ===== */
+    /* ===== Pop-up: Top Winners ===== */
     function openWinnersModal(){
       $('#modalTitle').textContent='Top Winners — Stats';
       modalChart.innerHTML='';
+      modalChart.classList.remove('factions');
+
       const s=computeStats(); const winFac=computeWinningFactionsByPlayer();
       const rows=s.winnersRank.map(r=>({name:r.name,wins:r.wins,games:r.games,winRate:(r.winRate*100)||0,avgVP:r.avgVP||0}));
       const max=Math.max(...rows.map(r=>r.wins||0),1);
@@ -613,7 +640,7 @@ Sorry. = )
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
     }
 
-    /* ===== Modal: Top Factions (mantido, com CSS responsivo) ===== */
+    /* ===== Pop-up: Top Factions ===== */
     function openFactionsModal(){
       $('#modalTitle').textContent='Top Factions — Stats';
       modalChart.innerHTML='';
@@ -658,7 +685,7 @@ Sorry. = )
     modal.addEventListener('click',(e)=>{ if(e.target===modal){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); }});
     window.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal.classList.contains('show')){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); }});
 
-    // Colapsadores + carets (setas)
+    // Colapsadores + carets
     function setSectionCollapsed(targetId, collapsed){
       const sec = document.getElementById(targetId)?.closest('.card'); if(!sec) return;
       const content = document.getElementById(targetId);
