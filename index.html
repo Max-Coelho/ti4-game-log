@@ -187,7 +187,7 @@ Sorry. = )</div>
     const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // DOM elements
     const createForm      = document.getElementById('createLogForm');
@@ -235,8 +235,8 @@ Sorry. = )</div>
       hideMessages();
 
       try{
-        const { data, error } = await supabase
-          .from('games')
+        const { data, error } = await supabaseClient
+  .from('games')
           .insert([ { name, creator_name: creatorName } ])
           .select('slug')
           .single();
@@ -270,8 +270,8 @@ Sorry. = )</div>
       hideMessages();
 
       try{
-        const { data, error } = await supabase
-          .from('games')
+        const { data, error } = await supabaseClient
+  .from('games')
           .select('slug')
           .eq('slug', slug)
           .maybeSingle();
