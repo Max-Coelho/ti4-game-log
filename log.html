@@ -669,15 +669,18 @@ Sorry. = )
 /* ======= Supabase sync (não altera layout) ======= */
 const SUPABASE_URL = 'https://zunnkdejwxoxgajhdwnn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bm5rZGVqd3hveGdhamhkd25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzg3MjUsImV4cCI6MjA3MzgxNDcyNX0.P4tSLbtunxzWSXm0pOeZT7J35qvqiPU7Rp838z_nxVA';
-const supabase = window.supabase?.createClient
+
+const supabaseClient = window.supabase?.createClient
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
 const __slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1] || null;
-  if (__slug) {
+
+if (__slug) {
   const el = document.getElementById('slugDisplay');
   if (el) el.textContent = '— ' + __slug;
 }
+
 const __flash = (msg, ok=false)=>{
   const el = document.getElementById('supabaseMsg');
   if(!el) return;
@@ -686,72 +689,92 @@ const __flash = (msg, ok=false)=>{
   setTimeout(()=>{ el.textContent=''; el.style.color='#93a0ad'; }, 1500);
 };
 
-
 async function __getGameIdBySlug(){
-  const { data, error } = await supabase.from('games').select('id').eq('slug', __slug).maybeSingle();
+  const { data, error } = await supabaseClient
+    .from('games')
+    .select('id')
+    .eq('slug', __slug)
+    .maybeSingle();
   if(error || !data) throw new Error('Log not found for slug');
   return data.id;
 }
 
 // carrega eventos -> window.games
 async function __loadFromSupabase(){
-  if(!supabase || !__slug) return;
+  if(!supabaseClient || !__slug) return;
   try{
     const gameId = await __getGameIdBySlug();
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('events')
       .select('payload, created_at')
       .eq('game_id', gameId)
       .eq('type', 'ADD_GAME_ENTRY')
       .order('created_at', { ascending: true });
-    if(error) throw error;
-    const arr = (data || []).map(r => r.payload || {}).filter(x => x && x.id);
-// 🔧 atualiza as DUAS variáveis
-games = Array.isArray(arr) ? arr : [];
-window.games = games;
 
-if (typeof window.render === 'function') window.render();
+    if(error) throw error;
+
+    const arr = (data || []).map(r => r.payload || {}).filter(x => x && x.id);
+
+    // atualiza variáveis
+    games = Array.isArray(arr) ? arr : [];
+    window.games = games;
+
+    // força UI atualizar
+    if (typeof window.render === 'function') window.render();
 
     __flash('Loaded from Supabase', true);
-  }catch(e){ console.warn(e); __flash('Could not load from Supabase'); }
+  }catch(e){
+    console.warn(e);
+    __flash('Could not load from Supabase');
+  }
 }
 
 // intercepta saveGames -> grava tudo em events (substitui conjunto)
 (function __overrideSave(){
-  if(!supabase || !__slug) return;
+  if(!supabaseClient || !__slug) return;
+
   const __origSave = window.saveGames || function(){};
   let __syncTimer = null;
+
   window.saveGames = function(arr){
-    // se quiser manter cópia local também, descomente:
-    // __origSave(arr);
+    // fallback local SEMPRE
+    __origSave(arr);
 
     clearTimeout(__syncTimer);
     __syncTimer = setTimeout(async ()=>{
       try{
         const gameId = await __getGameIdBySlug();
+
         // apaga eventos antigos desse log
-        const { error: delErr } = await supabase
+        const { error: delErr } = await supabaseClient
           .from('events')
           .delete()
           .eq('game_id', gameId)
           .eq('type', 'ADD_GAME_ENTRY');
+
         if(delErr) throw delErr;
+
         // insere todos os jogos atuais como eventos
         const rows = (arr||[]).map(g=>({ game_id: gameId, type:'ADD_GAME_ENTRY', payload:g }));
         if(rows.length){
-          const { error: insErr } = await supabase.from('events').insert(rows);
+          const { error: insErr } = await supabaseClient.from('events').insert(rows);
           if(insErr) throw insErr;
         }
+
         __flash('Saved to Supabase', true);
-      }catch(e){ console.error(e); __flash('Save failed (Supabase)'); }
+      }catch(e){
+        console.error(e);
+        __flash('Save failed (Supabase)');
+      }
     }, 300);
   };
 })();
 
 // realtime (se marcado em Publications)
 (function __subscribeRealtime(){
-  if(!supabase || !__slug) return;
-  supabase.channel('rt:log')
+  if(!supabaseClient || !__slug) return;
+
+  supabaseClient.channel('rt:log')
     .on('postgres_changes', { event:'*', schema:'public', table:'events' }, (payload)=>{
       if(payload?.new?.type === 'ADD_GAME_ENTRY'){ __loadFromSupabase(); }
     })
