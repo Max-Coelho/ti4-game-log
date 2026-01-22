@@ -30,13 +30,7 @@ html, body{
 font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
 background: linear-gradient(180deg, #0a0f14 0%, #0b1016 100%);
 color: var(--text);
-}
-.container{
-max-width:600px; margin:0 auto; padding:40px 20px; min-height:100vh;
-display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
-}
-.logo{
-font-size:2.5rem; font-weight:800; margin-bottom:8px;
+@@ -26,33 +36,15 @@
 background: linear-gradient(135deg, var(--accent), var(--accent-2));
 -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
 }
@@ -73,13 +67,7 @@ box-shadow:0 6px 22px rgba(0,0,0,.28); width:100%; max-width:500px;
 .block + .block{ margin-top:24px; }
 
 .btn{
-background: linear-gradient(90deg, rgba(96,165,250,.18), rgba(96,165,250,.10));
-border:1px solid #334155; border-radius:12px; padding:16px 24px;
-font-size:1.1rem; color:var(--text); cursor:pointer; transition:all .15s ease;
-text-decoration:none; display:inline-block; width:100%; margin:12px 0;
-}
-.btn:hover{
-background:linear-gradient(90deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
+@@ -66,6 +58,7 @@
 border-color:#475569; transform:translateY(-1px);
 }
 .btn.secondary{ background:transparent; border-color:var(--border); }
@@ -87,17 +75,7 @@ border-color:#475569; transform:translateY(-1px);
 .btn.secondary:hover{
 background:linear-gradient(90deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
 border-color:#475569; transform:translateY(-1px);
-}
-
-.input-group{ margin:20px 0; text-align:left; }
-.input-group label{ display:block; color:var(--muted); font-size:.9rem; margin-bottom:6px; }
-.input-group input{
-width:100%; background:#0b121a; color:var(--text); border:1px solid var(--border);
-border-radius:12px; padding:12px; font-size:1rem; outline:none;
-}
-.input-group input:focus{ border-color:#334155; box-shadow:0 0 0 3px rgba(96,165,250,.18); }
-
-.divider{ display:flex; align-items:center; margin:24px 0; color:var(--muted); font-size:.9rem; }
+@@ -83,6 +76,7 @@
 .divider::before, .divider::after{ content:''; flex:1; height:1px; background:var(--border); }
 .divider span{ padding:0 16px; text-transform:uppercase; letter-spacing:.06em; font-size:.8rem; }
 
@@ -105,12 +83,7 @@ border-radius:12px; padding:12px; font-size:1rem; outline:none;
 .features{ list-style:none; padding:0; margin:0; text-align:left; }
 .features.two-col{
 display:grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-column-gap:20px; row-gap:8px;
-}
-.features li{
-display:flex; align-items:center; color:var(--muted);
-margin:8px 0;
-}
+@@ -95,18 +89,41 @@
 .features li::before{
 content:'✓'; color:var(--ok); font-weight:bold; margin-right:12px; font-size:1.05rem;
 }
@@ -156,10 +129,7 @@ content:'✓'; color:var(--ok); font-weight:bold; margin-right:12px; font-size:1
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<div class="container">
-<div class="logo">TI4 Game Log</div>
-<p class="subtitle">
-Create a log for your Twilight Imperium IV matches.<br/>
+@@ -117,38 +134,10 @@
 Share the unique URL with your friends and track your galactic achievements together!
 </p>
 
@@ -200,11 +170,7 @@ Share the unique URL with your friends and track your galactic achievements toge
 <form id="createLogForm">
 <button type="submit" class="btn" id="createBtn">
 Create New Game Log
-</button>
-<div class="loading" id="loadingMessage">Creating your personalized log…</div>
-<div class="error" id="errorMessage"></div>
-<div class="success" id="successMessage"></div>
-</form>
+@@ -160,6 +149,7 @@
 
 <div class="divider"><span>or</span></div>
 
@@ -212,9 +178,7 @@ Create New Game Log
 <form id="accessLogForm">
 <div class="input-group">
 <label for="logId">Existing Log ID (slug)</label>
-<input type="text" id="logId" placeholder="e.g., abc123xy" maxlength="20"/>
-</div>
-<button type="submit" class="btn secondary">Access Existing Log</button>
+@@ -169,7 +159,7 @@
 </form>
 </section>
 
@@ -223,13 +187,7 @@ Create New Game Log
 <section class="block" id="features">
 <div class="divider"><span>features</span></div>
 <ul class="features two-col">
-<li>Clean interface</li>
-<li>Auto stats / rankings</li>
-<li>Sharable unique URL</li>
-<li>Complete match history</li>
-<li>TI4 + PoK + Keleres</li>
-<li>Free to use</li>
-</ul>
+@@ -183,6 +173,7 @@
 </section>
 </div>
 
@@ -237,9 +195,7 @@ Create New Game Log
 <div class="footer" aria-label="Project disclaimer">
 <div class="footer-title">Conquer the Galaxy ⭐</div>
 <div class="footer-text">This project was made by a non-coder.
-There is no support and your data may vanish at some point.
-Sorry. = )</div>
-</div>
+@@ -192,54 +183,116 @@
 </div>
 
 <script>
@@ -381,10 +337,3 @@ setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 900);
 if(match){
 const slug = match[1];
 const subtitle = document.querySelector('.subtitle');
-if (subtitle) subtitle.textContent = `Accessing log: ${slug}`;
-const logIdField = document.getElementById('logId');
-if (logIdField) logIdField.value = slug;
-}
-</script>
-</body>
-</html>
