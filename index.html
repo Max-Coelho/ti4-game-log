@@ -140,7 +140,7 @@
         <!-- create log: sem campos visíveis, mantém o botão e funcionalidade -->
         <form id="createLogForm">
           <button type="submit" class="btn" id="createBtn">
-            Create New Game Log
+            Create Random Log Seed
           </button>
           <div class="loading" id="loadingMessage">Creating your personalized log…</div>
           <div class="error" id="errorMessage"></div>
@@ -149,13 +149,13 @@
 
         <div class="divider"><span>or</span></div>
 
-        <!-- acesso a log existente -->
+        <!-- acesso a log existente / seed personalizada -->
         <form id="accessLogForm">
           <div class="input-group">
-            <label for="logId">Existing Log ID (slug)</label>
-            <input type="text" id="logId" placeholder="e.g., abc123xy" maxlength="20"/>
+            <label for="logId">Create your own seed</label>
+            <input type="text" id="logId" placeholder="e.g., my-awesome-game" maxlength="20"/>
           </div>
-          <button type="submit" class="btn secondary">Access Existing Log</button>
+          <button type="submit" class="btn secondary">Create Own Seed</button>
         </form>
       </section>
 
@@ -196,6 +196,15 @@ Sorry. = )</div>
     const errorMessage    = document.getElementById('errorMessage');
     const successMessage  = document.getElementById('successMessage');
     const createBtn       = document.getElementById('createBtn');
+    const logIdInput      = document.getElementById('logId');
+
+    // Implementação da substituição de espaço por hifen em tempo real
+    logIdInput.addEventListener('input', (e) => {
+      const start = e.target.selectionStart;
+      const end = e.target.selectionEnd;
+      e.target.value = e.target.value.replace(/\s/g, '-');
+      e.target.setSelectionRange(start, end);
+    });
 
     // Helpers
     function showLoading(show){
@@ -216,7 +225,8 @@ Sorry. = )</div>
     }
 
     // Gera valores padrões já que removemos os campos visuais
-    function defaultPlaygroupName(){
+    function defaultPlaygroupName(customName){
+      if (customName) return customName;
       const d = new Date();
       const y = d.getFullYear();
       const m = String(d.getMonth()+1).padStart(2,'0');
@@ -236,7 +246,7 @@ Sorry. = )</div>
 
       try{
         const { data, error } = await supabaseClient
-  .from('games')
+          .from('games')
           .insert([ { name, creator_name: creatorName } ])
           .select('slug')
           .single();
@@ -256,13 +266,13 @@ Sorry. = )</div>
       }
     });
 
-    // Access existing log (SELECT by slug)
+    // Access existing log or create with custom seed (SELECT then INSERT if not exists)
     accessForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
-      const slug = document.getElementById('logId').value.trim();
+      let slug = logIdInput.value.trim();
 
       if(!slug){
-        showError('Please enter a log ID (slug).');
+        showError('Please enter a seed.');
         return;
       }
 
@@ -270,35 +280,52 @@ Sorry. = )</div>
       hideMessages();
 
       try{
-        const { data, error } = await supabaseClient
-  .from('games')
+        // Primeiro verifica se já existe
+        const { data: existing, error: fetchError } = await supabaseClient
+          .from('games')
           .select('slug')
           .eq('slug', slug)
           .maybeSingle();
 
-        if(error) throw error;
-        if(!data){ throw new Error('Log not found'); }
+        if(fetchError) throw fetchError;
 
-        showLoading(false);
-        showSuccess('Log found! Redirecting…');
-        setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 900);
+        if(existing){
+          // Se já existe, apenas redireciona
+          showLoading(false);
+          showSuccess('Log found! Redirecting…');
+          setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 900);
+        } else {
+          // Se não existe, cria um novo com esse slug
+          // Nota: O banco de dados gera um slug aleatório por padrão se não for fornecido.
+          // Para forçar o slug personalizado, precisamos que a coluna 'slug' aceite o insert.
+          const { data: created, error: insertError } = await supabaseClient
+            .from('games')
+            .insert([ { name: defaultPlaygroupName(slug), creator_name: 'Anonymous', slug: slug } ])
+            .select('slug')
+            .single();
+          
+          if(insertError) throw insertError;
+
+          showLoading(false);
+          showSuccess('New seed created! Redirecting…');
+          setTimeout(()=>{ window.location.href = `/log/${slug}`; }, 1200);
+        }
 
       }catch(err){
         console.error(err);
         showLoading(false);
-        showError('Log not found. Please check the ID and try again.');
+        showError('Error processing seed. Please try again.');
       }
     });
 
     // If URL already contains /log/<id>, reflect it on the page (cosmetic)
     const urlPath = window.location.pathname;
-    const match = urlPath.match(/\/log\/([a-z0-9]{6,12})/i);
+    const match = urlPath.match(/\/log\/([a-z0-9\-_]{3,20})/i);
     if(match){
       const slug = match[1];
       const subtitle = document.querySelector('.subtitle');
       if (subtitle) subtitle.textContent = `Accessing log: ${slug}`;
-      const logIdField = document.getElementById('logId');
-      if (logIdField) logIdField.value = slug;
+      if (logIdInput) logIdInput.value = slug;
     }
   </script>
 </body>
