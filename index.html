@@ -52,6 +52,7 @@
       border:1px solid #334155; border-radius:12px; padding:16px 24px;
       font-size:1.1rem; color:var(--text); cursor:pointer; transition:all .15s ease;
       text-decoration:none; display:inline-block; width:100%; margin:12px 0;
+      position: relative;
     }
     .btn:hover{
       background:linear-gradient(90deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
@@ -62,6 +63,48 @@
     .btn.secondary:hover{
       background:linear-gradient(90deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
       border-color:#475569; transform:translateY(-1px);
+    }
+
+    /* Efeito de Brilho Animado (Border Beam) */
+    .btn-animated {
+      overflow: hidden;
+    }
+    .btn-animated::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 2px; /* espessura da borda de brilho */
+      background: conic-gradient(
+        from var(--angle),
+        transparent 70%,
+        var(--accent) 85%,
+        var(--accent-2) 95%,
+        var(--accent) 100%
+      );
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: xor;
+      -webkit-mask-composite: destination-out;
+      animation: rotate-angle 4s linear infinite;
+      pointer-events: none;
+    }
+
+    @property --angle {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    @keyframes rotate-angle {
+      to { --angle: 360deg; }
+    }
+
+    /* Fallback para navegadores que não suportam @property */
+    @supports not (background: conic-gradient(from 0deg, red, blue)) {
+      .btn-animated::before {
+        display: none;
+      }
     }
 
     .input-group{ margin:20px 0; text-align:left; }
@@ -155,7 +198,7 @@
             <label for="logId">Create your own seed</label>
             <input type="text" id="logId" placeholder="e.g., my-awesome-game" maxlength="20"/>
           </div>
-          <button type="submit" class="btn secondary">Create Own Seed</button>
+          <button type="submit" class="btn secondary btn-animated">Create Own Seed</button>
         </form>
       </section>
 
