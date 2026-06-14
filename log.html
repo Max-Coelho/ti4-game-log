@@ -306,8 +306,18 @@ Sorry. = )
       "Universities of Jol-Nar":"Jol Nar.png","Xxcha Kingdom":"Xxcha.png","Yin Brotherhood":"Yin.png","Yssaril Tribes":"Yssaril.png",
       "Barony of Letnev":"Letnev.png","Clan of Saar":"Saar.png","Embers of Muaat":"Muaat.png","Emirates of Hacan":"Hacan.png",
       "Federation of Sol":"Sol.png","Ghosts of Creuss":"Creuss.png","L1Z1X Mindnet":"L1Z1X.png","Mentak Coalition":"Mentak.png",
-      "Argent Flight":"Argent.png","Empyrean":"Empyrean.png","Mahact Gene-Sorcerers":"Mahact.png","Naaz-Rokha Alliance":"Naaz-Rokha.png",
+      "Argent Flight":"Argent.png","Empyrean":"Empyrean.png","Mahact Gene-Sorcerers":"Mahact.png","Naaz-Rokha Alliance":"NRA.png",
       "Nomad":"Nomad.png","Titans of Ul":"Titans.png","Vuil'Raith Cabal":"Vuil'Raith.png","Council Keleres":"Keleres.png"
+    };
+
+    // Emojis para o dropdown como fallback visual rápido
+    const FACTION_EMOJI_MAP={
+      "Nekro Virus":"🤖","Sardakk N'orr":"🐜","Naalu Collective":"🐍","Arborec":"🌿","Winnu":"🏛️",
+      "Universities of Jol-Nar":"🎓","Xxcha Kingdom":"🐢","Yin Brotherhood":"🧬","Yssaril Tribes":"🎭",
+      "Barony of Letnev":"🛡️","Clan of Saar":"☄️","Embers of Muaat":"🔥","Emirates of Hacan":"🦁",
+      "Federation of Sol":"☀️","Ghosts of Creuss":"🌀","L1Z1X Mindnet":"💻","Mentak Coalition":"🏴‍☠️",
+      "Argent Flight":"🦅","Empyrean":"✨","Mahact Gene-Sorcerers":"👑","Naaz-Rokha Alliance":"🦾",
+      "Nomad":"⌛","Titans of Ul":"🗿","Vuil'Raith Cabal":"🐙","Council Keleres":"⚖️"
     };
 
     const LS_KEY='ti4_game_log_v1';
@@ -370,7 +380,14 @@ Sorry. = )
     gameDurationTime.value = '06:00';
 
     function getAllPlayerNames(){const set=new Set();games.forEach(g=>g.players.forEach(p=>{if(p.name?.trim())set.add(p.name.trim())}));return Array.from(set).sort((a,b)=>a.localeCompare(b))}
-    function createFactionSelect(){const sel=document.createElement('select');sel.required=true;sel.className='faction-select';sel.innerHTML='<option value="" disabled selected>Select faction</option>'+ALL_FACTIONS.map(f=>`<option value="${f}">${f}</option>`).join('');applyFactionIconToSelect(sel);return sel}
+    function createFactionSelect(){
+      const sel=document.createElement('select');sel.required=true;sel.className='faction-select';
+      sel.innerHTML='<option value="" disabled selected>Select faction</option>'+ALL_FACTIONS.map(f=>{
+        const emoji = FACTION_EMOJI_MAP[f] || '❓';
+        return `<option value="${f}">${emoji} ${f}</option>`;
+      }).join('');
+      applyFactionIconToSelect(sel);return sel
+    }
     function createVPSelect(prefVP){const sel=document.createElement('select');sel.setAttribute('data-vp','1');sel.required=true;sel.innerHTML=Array.from({length:15},(_,i)=>`<option value="${i}" ${prefVP==i?'selected':''}>${i} VP</option>`).join('');return sel}
     function createPlayerRow(pref={}){const row=document.createElement('div');row.className='player-row';
       const name=document.createElement('input');name.type='text';name.placeholder='Player name';name.required=true;if(pref.name)name.value=pref.name;
