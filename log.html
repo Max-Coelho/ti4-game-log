@@ -57,6 +57,58 @@
     .btn.glow-red{border-color:var(--danger)!important; animation: flashRed .6s ease}
     @keyframes flashRed{0%{box-shadow:0 0 0 0 rgba(239,68,68,0)}30%{box-shadow:0 0 0 4px rgba(239,68,68,.35)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 
+    /* Custom Faction Dropdown */
+    .custom-select-wrapper {
+      position: relative;
+      user-select: none;
+      width: 100%;
+    }
+    .custom-select {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0b121a;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      min-height: 42px;
+    }
+    .custom-select:after {
+      content: '▼';
+      font-size: 0.7rem;
+      margin-left: auto;
+      color: var(--muted);
+    }
+    .custom-options {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #0f1720;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-top: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .custom-options.show { display: block; }
+    .custom-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .custom-option:hover { background: rgba(96,165,250,0.1); }
+    .custom-option.disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
+    .custom-option img { width: 20px; height: 20px; object-fit: contain; }
+
     /* players list */
     .player-row{display:grid;grid-template-columns:1.2fr 1.4fr .6fr auto;gap:8px;align-items:center}
     .player-row + .player-row{margin-top:8px}
@@ -97,8 +149,6 @@
     /* faction icons */
     .fac-icon{width:18px;height:18px;object-fit:contain;vertical-align:middle;flex:none}
     .fac-icon.sm{width:16px;height:16px;margin-right:6px}
-    select.faction-select{background-repeat:no-repeat;background-position:8px center;background-size:18px 18px;padding-left:36px}
-    select.faction-select:focus{background-color:#0b121a}
 
     .win-icons{display:inline-flex;align-items:center;gap:6px;margin-left:8px}
     #winnersChart.winners .label{flex:0 0 auto;max-width:none}
@@ -108,7 +158,6 @@
     #modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay);z-index:50}
     #modal.show{display:flex}
     .dialog{background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);border:1px solid var(--border);border-radius:16px;max-width:960px;width:92vw;max-height:86vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-    /* Cabeçalho dos pop-ups: fundo #68CBD4 e título centralizado */
     .dialog header{
       position:relative;
       display:flex;align-items:center;justify-content:center;
@@ -119,7 +168,7 @@
     .dialog header .close{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer}
     .dialog .content{padding:14px}
 
-    /* ===== Winners modal (layout V6) — INALTERADO ===== */
+    /* Winners modal */
     #modalChart .wrow{
       display:grid;grid-template-columns:10ch 160px 210px 1fr;align-items:center;column-gap:24px;
       padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)
@@ -136,9 +185,7 @@
       #modalChart .track{width:140px}
     }
 
-    /* ===== Factions modal — nome em 22ch (Mahact Gene-Sorcerers) ===== */
-    /* Colunas: Ícone (24px) | Nome (22ch) | Barra (210px) | Métricas (1fr)
-       Espaçamento entre colunas = 24px, igual para Nome→Barra e Barra→Métricas. */
+    /* Factions modal */
     #modalChart.factions .frow{
       display:grid;
       grid-template-columns:24px 22ch 210px 1fr;
@@ -154,12 +201,10 @@
     #modalChart.factions .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--bar),var(--accent))}
     #modalChart.factions .stats{font-size:.9rem;color:var(--muted);text-align:right;white-space:nowrap}
     @media (max-width:920px){
-      /* No mobile mantemos 22ch para preservar o alinhamento relativo ao maior nome */
       #modalChart.factions .frow{grid-template-columns:24px 22ch 140px 1fr;column-gap:16px}
       #modalChart.factions .track{width:140px}
     }
 
-    /* Ajustes adicionais preservados de versões anteriores */
     .games button.btn.ghost[data-del]:hover{ border-color: var(--danger) !important; }
     footer{ margin-top:36px; text-align:center; }
     footer .footer-note{ max-width:960px; margin:8px auto 0; font-size:.85rem; color:var(--muted); line-height:1.4; }
@@ -169,11 +214,11 @@
   <div class="container">
     <header>
       <div>
-  <div class="title">
-    Twilight Imperium IV — Game Log
-    <span id="slugDisplay" style="color:#A2C94D;margin-left:6px"></span>
-  </div>
-</div>
+        <div class="title">
+          Twilight Imperium IV — Game Log
+          <span id="slugDisplay" style="color:#A2C94D;margin-left:6px"></span>
+        </div>
+      </div>
       <div class="tools">
         <button class="btn primary" id="exportBtn" title="Export your data as JSON">Export JSON</button>
         <label class="btn ghost" for="importInput" title="Import a previously exported JSON">
@@ -206,12 +251,10 @@
           <div id="players"></div>
 
           <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align-items:center">
-  <span id="supabaseMsg" style="font-size:12px;color:#93a0ad"></span>
-  <button class="btn" type="button" id="clearForm">Clear</button>
-  <button class="btn primary btn-animated" type="submit">Save Game</button>
-</div>
-
-
+            <span id="supabaseMsg" style="font-size:12px;color:#93a0ad"></span>
+            <button class="btn" type="button" id="clearForm">Clear</button>
+            <button class="btn primary btn-animated" type="submit">Save Game</button>
+          </div>
         </form>
       </section>
 
@@ -274,8 +317,8 @@
       <div>Conquer the Galaxy ⭐</div>
       <div class="footer-note">
         This project was made by a non-coder.<br>
-There is no support and your data may vanish at some point.<br>
-Sorry. = )
+        There is no support and your data may vanish at some point.<br>
+        Sorry. = )
       </div>
     </footer>
   </div>
@@ -306,18 +349,8 @@ Sorry. = )
       "Universities of Jol-Nar":"Jol Nar.png","Xxcha Kingdom":"Xxcha.png","Yin Brotherhood":"Yin.png","Yssaril Tribes":"Yssaril.png",
       "Barony of Letnev":"Letnev.png","Clan of Saar":"Saar.png","Embers of Muaat":"Muaat.png","Emirates of Hacan":"Hacan.png",
       "Federation of Sol":"Sol.png","Ghosts of Creuss":"Creuss.png","L1Z1X Mindnet":"L1Z1X.png","Mentak Coalition":"Mentak.png",
-      "Argent Flight":"Argent.png","Empyrean":"Empyrean.png","Mahact Gene-Sorcerers":"Mahact.png","Naaz-Rokha Alliance":"NRA.png",
+      "Argent Flight":"Argent.png","Empyrean":"Empyrean.png","Mahact Gene-Sorcerers":"Mahact.png","Naaz-Rokha Alliance":"Naaz-Rokha.png",
       "Nomad":"Nomad.png","Titans of Ul":"Titans.png","Vuil'Raith Cabal":"Vuil'Raith.png","Council Keleres":"Keleres.png"
-    };
-
-    // Emojis para o dropdown como fallback visual rápido
-    const FACTION_EMOJI_MAP={
-      "Nekro Virus":"🤖","Sardakk N'orr":"🐜","Naalu Collective":"🐍","Arborec":"🌿","Winnu":"🏛️",
-      "Universities of Jol-Nar":"🎓","Xxcha Kingdom":"🐢","Yin Brotherhood":"🧬","Yssaril Tribes":"🎭",
-      "Barony of Letnev":"🛡️","Clan of Saar":"☄️","Embers of Muaat":"🔥","Emirates of Hacan":"🦁",
-      "Federation of Sol":"☀️","Ghosts of Creuss":"🌀","L1Z1X Mindnet":"💻","Mentak Coalition":"🏴‍☠️",
-      "Argent Flight":"🦅","Empyrean":"✨","Mahact Gene-Sorcerers":"👑","Naaz-Rokha Alliance":"🦾",
-      "Nomad":"⌛","Titans of Ul":"🗿","Vuil'Raith Cabal":"🐙","Council Keleres":"⚖️"
     };
 
     const LS_KEY='ti4_game_log_v1';
@@ -370,7 +403,6 @@ Sorry. = )
 
     const getFactionIcon=(name)=>FACTION_ICON_MAP[name]?(FACTION_ICON_BASE+FACTION_ICON_MAP[name]):null;
     const labelWithIconHTML=(label)=>{const url=getFactionIcon(label);return url?`<img class="fac-icon" src="${url}" alt="" title="${label}">${label}`:label};
-    const applyFactionIconToSelect=(sel)=>{const url=getFactionIcon(sel.value); sel.style.backgroundImage=url?`url('${url}')`:'none'};
 
     const pad2=n=>String(n).padStart(2,'0');
     const minutesToHHMM=(mins)=>{ if(!Number.isFinite(mins)) return '—'; const h=Math.floor(mins/60), m=Math.round(mins%60); return `${pad2(h)}h ${pad2(m)}m`; };
@@ -380,31 +412,115 @@ Sorry. = )
     gameDurationTime.value = '06:00';
 
     function getAllPlayerNames(){const set=new Set();games.forEach(g=>g.players.forEach(p=>{if(p.name?.trim())set.add(p.name.trim())}));return Array.from(set).sort((a,b)=>a.localeCompare(b))}
+    
+    // Dropdown Customizado
     function createFactionSelect(){
-      const sel=document.createElement('select');sel.required=true;sel.className='faction-select';
-      sel.innerHTML='<option value="" disabled selected>Select faction</option>'+ALL_FACTIONS.map(f=>{
-        const emoji = FACTION_EMOJI_MAP[f] || '❓';
-        return `<option value="${f}">${emoji} ${f}</option>`;
-      }).join('');
-      applyFactionIconToSelect(sel);return sel
+      const wrapper = document.createElement('div');
+      wrapper.className = 'custom-select-wrapper';
+      
+      const select = document.createElement('div');
+      select.className = 'custom-select';
+      select.innerHTML = 'Select faction';
+      
+      const options = document.createElement('div');
+      options.className = 'custom-options';
+      
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.required = true;
+      
+      // Opção inicial (vazia)
+      const placeholder = document.createElement('div');
+      placeholder.className = 'custom-option';
+      placeholder.innerHTML = 'Select faction';
+      placeholder.onclick = () => selectOption('', 'Select faction');
+      options.appendChild(placeholder);
+
+      ALL_FACTIONS.forEach(f => {
+        const opt = document.createElement('div');
+        opt.className = 'custom-option';
+        opt.setAttribute('data-value', f);
+        const icon = getFactionIcon(f);
+        opt.innerHTML = `${icon ? `<img src="${icon}">` : ''} <span>${f}</span>`;
+        opt.onclick = () => selectOption(f, f);
+        options.appendChild(opt);
+      });
+
+      function selectOption(val, label) {
+        hiddenInput.value = val;
+        const icon = getFactionIcon(val);
+        select.innerHTML = `${icon ? `<img src="${icon}" class="fac-icon">` : ''} <span>${label}</span>`;
+        options.classList.remove('show');
+        updateFactionOptions();
+        // Trigger change event manual
+        const event = new Event('change');
+        hiddenInput.dispatchEvent(event);
+      }
+
+      select.onclick = (e) => {
+        e.stopPropagation();
+        const isShow = options.classList.contains('show');
+        // Close all other dropdowns
+        document.querySelectorAll('.custom-options').forEach(el => el.classList.remove('show'));
+        if (!isShow) options.classList.add('show');
+      };
+
+      document.addEventListener('click', () => options.classList.remove('show'));
+
+      wrapper.append(select, options, hiddenInput);
+      
+      // Proxy properties for compatibility
+      Object.defineProperty(wrapper, 'value', {
+        get: () => hiddenInput.value,
+        set: (val) => selectOption(val, val || 'Select faction')
+      });
+
+      return wrapper;
     }
+
     function createVPSelect(prefVP){const sel=document.createElement('select');sel.setAttribute('data-vp','1');sel.required=true;sel.innerHTML=Array.from({length:15},(_,i)=>`<option value="${i}" ${prefVP==i?'selected':''}>${i} VP</option>`).join('');return sel}
+    
     function createPlayerRow(pref={}){const row=document.createElement('div');row.className='player-row';
       const name=document.createElement('input');name.type='text';name.placeholder='Player name';name.required=true;if(pref.name)name.value=pref.name;
       const listId='namesList';if(!document.getElementById(listId)){const dl=document.createElement('datalist');dl.id=listId;document.body.appendChild(dl)}name.setAttribute('list',listId);
-      const faction=createFactionSelect();if(pref.faction)faction.value=pref.faction;applyFactionIconToSelect(faction);faction.addEventListener('change',()=>{updateFactionOptions();applyFactionIconToSelect(faction)});
+      
+      const faction=createFactionSelect();
+      if(pref.faction) faction.value = pref.faction;
+      
       const vp=createVPSelect(pref.vp??0);
       const del=document.createElement('button');del.type='button';del.className='btn ghost';del.textContent='Remove';
       del.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count<=MIN_PLAYERS){flashRed(del);return}row.remove();updateNamesList();updateFactionOptions()};
       row.append(name,faction,vp,del);playersWrap.appendChild(row);updateFactionOptions();
     }
+
     function updateNamesList(){const dl=document.getElementById('namesList');if(!dl)return;const names=new Set([...getAllPlayerNames(),...$$('.player-row input[type=text]',playersWrap).map(i=>i.value.trim()).filter(Boolean)]);dl.innerHTML=Array.from(names).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}"></option>`).join('')}
-    function getSelectedFactions(){return $$('.player-row select',playersWrap).filter(s=>!s.hasAttribute('data-vp')).map(s=>s.value).filter(v=>v&&v!=='')}
-    function updateFactionOptions(){const chosen=new Set(getSelectedFactions());$$('.player-row select',playersWrap).forEach(sel=>{if(sel.hasAttribute('data-vp'))return;$$('option',sel).forEach(opt=>{if(!opt.value)return;opt.disabled=chosen.has(opt.value)&&sel.value!==opt.value})})}
+    
+    function getSelectedFactions(){
+      return Array.from(document.querySelectorAll('.custom-select-wrapper')).map(w => w.value).filter(v => v);
+    }
+
+    function updateFactionOptions(){
+      const chosen = new Set(getSelectedFactions());
+      document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+        const options = wrapper.querySelectorAll('.custom-option');
+        options.forEach(opt => {
+          const val = opt.getAttribute('data-value');
+          if (!val) return;
+          if (chosen.has(val) && wrapper.value !== val) {
+            opt.classList.add('disabled');
+            opt.style.pointerEvents = 'none';
+          } else {
+            opt.classList.remove('disabled');
+            opt.style.pointerEvents = 'auto';
+          }
+        });
+      });
+    }
+
     function ensureMinPlayers(min=MIN_PLAYERS){while($$('.player-row',playersWrap).length<min){createPlayerRow()}} ensureMinPlayers(MIN_PLAYERS);
     addPlayerBtn.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count>=MAX_PLAYERS){flashRed(addPlayerBtn);return}createPlayerRow();updateNamesList()};
     prefill6Btn.onclick=()=>{playersWrap.innerHTML='';for(let i=0;i<6;i++)createPlayerRow();updateNamesList();updateFactionOptions()};
-    clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updateNamesList();$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');$$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
+    clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updateNamesList();$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');document.querySelectorAll('.custom-select-wrapper').forEach(w=>w.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
 
     function validateUniqueFactions(players){const s=players.map(p=>p.faction).filter(Boolean);return new Set(s).size===s.length}
     function computePodiums(players){const scores=Array.from(new Set(players.map(p=>p.vp))).sort((a,b)=>b-a);const group=(score)=>players.map((p,i)=>p.vp===score?i:-1).filter(i=>i!==-1);return{scores,first:scores[0]!==undefined?group(scores[0]):[],second:scores[1]!==undefined?group(scores[1]):[],third:scores[2]!==undefined?group(scores[2]):[]}}
@@ -427,7 +543,6 @@ Sorry. = )
     }
     const computeStats=()=>computeStatsFrom(games);
 
-    /* ===== MODIFICAÇÃO SOLICITADA: agora retorna ícones com repetições (um por vitória) ===== */
     function computeWinningFactionsByPlayer(){
       const map=new Map();
       games.forEach(g=>{
@@ -435,7 +550,7 @@ Sorry. = )
           const p=g.players[i];
           if(!p||!p.name) return;
           if(!map.has(p.name)) map.set(p.name, []);
-          if(p.faction) map.get(p.name).push(p.faction); // adiciona repetido, um por vitória
+          if(p.faction) map.get(p.name).push(p.faction);
         });
       });
       return map;
@@ -448,8 +563,10 @@ Sorry. = )
       if(!Number.isFinite(durMinutes) || durMinutes<=0){ alert('Enter a valid duration (HH:MM).'); return; }
       const rows=$$('.player-row',playersWrap);
       const players=rows.map(r=>{
-        const [nameEl,factionEl,vpEl]=[$('input[type=text]',r),$('select:not([data-vp])',r),$('select[data-vp]',r)];
-        return {name:(nameEl.value||'').trim(),faction:factionEl.value,vp:Number(vpEl.value||0)};
+        const nameEl = $('input[type=text]',r);
+        const factionWrapper = $('.custom-select-wrapper',r);
+        const vpEl = $('select[data-vp]',r);
+        return {name:(nameEl.value||'').trim(),faction:factionWrapper.value,vp:Number(vpEl.value||0)};
       }).filter(p=>p.name&&p.faction);
 
       if(players.length<MIN_PLAYERS){alert(`Add at least ${MIN_PLAYERS} players.`);return}
@@ -462,58 +579,45 @@ Sorry. = )
 
       render();
       $$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');
-      $$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');
+      document.querySelectorAll('.custom-select-wrapper').forEach(w=>w.value='');
       updateNamesList(); updateFactionOptions();
     });
 
+    function formatWinnersWithFactions(g){
+      return g.winners.map(idx=>{
+        const p=g.players[idx];
+        const icon=getFactionIcon(p.faction);
+        return `${p.name} ${icon?`<img class="fac-icon sm" src="${icon}" alt="" title="${p.faction}">`:''}`;
+      });
+    }
+
     function renderKPIs(s){
-      statsGrid.innerHTML='';
-      const kpi=(label,value,sub='')=>{ const el=document.createElement('div'); el.className='stat';
-        el.innerHTML=`<div class="muted">${label}</div><div class="kpi">${value}</div>${sub?`<div class=\\"muted\\" style=\\"font-size:.8rem\\">${sub}</div>`:''}`;
-        statsGrid.appendChild(el);
-      };
-      kpi('Games Logged',s.totalGames);
-      kpi('Unique Players',s.uniquePlayers);
-      kpi('Avg Players / Game',s.avgPlayersPerGame.toFixed(2));
-      kpi('Avg Game Duration', s.avgDurationMinutes!=null ? minutesToHHMM(s.avgDurationMinutes) : '—');
+      statsGrid.innerHTML=`<div class="stat"><div class="muted">Games Logged</div><div class="kpi">${s.totalGames}</div></div><div class="stat"><div class="muted">Unique Players</div><div class="kpi">${s.uniquePlayers}</div></div><div class="stat"><div class="muted">Avg Players / Game</div><div class="kpi">${s.avgPlayersPerGame.toFixed(2)}</div></div><div class="stat"><div class="muted">Avg Game Duration</div><div class="kpi">${minutesToHHMM(s.avgDurationMinutes)}</div></div>`;
     }
 
-    function renderBarChart(container, rows, labelKey, valueKey, maxItems=10){
-      container.innerHTML = '';
-      if(!rows.length){ container.innerHTML = '<div class="muted">No data yet.</div>'; return }
-      const top = rows.slice(0, maxItems); const max = Math.max(...top.map(r=>Number(r[valueKey])||0), 1);
-      for(const r of top){
-        const bar = document.createElement('div'); bar.className='bar'; bar.innerHTML = `
-          <div class="meta">
-            <span class="label">${labelWithIconHTML(r[labelKey])}</span>
-            <div class="track"><div class="fill" style="width:${(100*(Number(r[valueKey])||0)/max).toFixed(1)}%"></div></div>
-          </div>
-          <div class="value">${r[valueKey]}</div>`;
-        container.appendChild(bar);
-      }
-    }
-
-    /* ===== Top Winners (na seção Stats & Charts) — sem barras ===== */
-    function renderWinnersChart(container,winnersRank){
-      container.innerHTML = '';
-      if(!winnersRank.length){ container.innerHTML = '<div class="muted">No data yet.</div>'; return }
-      const winFac = computeWinningFactionsByPlayer();
-      const top = winnersRank.slice(0, 10);
-      top.forEach(r=>{
-        const icons = Array.from(winFac.get(r.name)||[]).map(f=>{
-          const src = getFactionIcon(f); return src? `<img class="fac-icon sm" src="${src}" alt="" title="${f}">` : '';
-        }).join('');
-        const row = document.createElement('div'); row.className='bar';
-        row.innerHTML = `
-          <div class="meta">
-            <span class="label">${r.name}<span class="win-icons">${icons}</span></span>
-          </div>
-          <div class="value">${r.wins}</div>`;
+    function renderBarChart(container, data, labelKey, valueKey){
+      container.innerHTML=''; if(!data.length) return;
+      const max=Math.max(...data.map(d=>d[valueKey]),1);
+      data.slice(0,10).forEach(d=>{
+        const pct=(100*d[valueKey]/max).toFixed(1);
+        const row=document.createElement('div'); row.className='bar';
+        row.innerHTML=`<div class="meta"><div class="label" title="${d[labelKey]}">${labelWithIconHTML(d[labelKey])}</div><div class="track"><div class="fill" style="width:${pct}%"></div></div></div><div class="value">${d[valueKey]}</div>`;
         container.appendChild(row);
       });
     }
 
-    function formatWinnersWithFactions(g){return g.winners.map(i=>{const p=g.players[i];return `${p.name} – ${p.faction}`})}
+    function renderWinnersChart(container, rank){
+      container.innerHTML=''; if(!rank.length) return;
+      const max=Math.max(...rank.map(r=>r.wins),1); const winFac=computeWinningFactionsByPlayer();
+      rank.slice(0,10).forEach(r=>{
+        const pct=(100*r.wins/max).toFixed(1);
+        const row=document.createElement('div'); row.className='bar';
+        const icons=Array.from(new Set(winFac.get(r.name)||[])).map(f=>{const src=getFactionIcon(f);return src?`<img class="fac-icon sm" src="${src}" alt="" title="${f}">`:''}).join('');
+        row.innerHTML=`<div class="meta"><div class="label" title="${r.name}">${r.name}<div class="win-icons">${icons}</div></div><div class="track"><div class="fill" style="width:${pct}%"></div></div></div><div class="value">${r.wins}</div>`;
+        container.appendChild(row);
+      });
+    }
+
     function getLongestShortestDurations(){
       const ds=games.map(g=>g.durationMinutes).filter(d=>Number.isFinite(d));
       if(!ds.length) return {max:null,min:null};
@@ -580,7 +684,6 @@ Sorry. = )
       refreshCaretsFromState();
     }
 
-    /* ===== Modal: Top Winners (mantido visual; agora ícones repetem por vitória) ===== */
     function openWinnersModal(){
       $('#modalTitle').textContent='Top Winners — Stats';
       modalChart.innerHTML='';
@@ -589,7 +692,7 @@ Sorry. = )
       const max=Math.max(...rows.map(r=>r.wins||0),1);
       rows.slice(0,20).forEach(r=>{
         const pct=(100*(r.wins||0)/max).toFixed(1);
-        const icons=Array.from(winFac.get(r.name)||[]).map(f=>{const src=getFactionIcon(f);return src?`<img class="fac-icon sm" src="${src}" alt="" title="${f}">`:''}).join('');
+        const icons=Array.from(new Set(winFac.get(r.name)||[])).map(f=>{const src=getFactionIcon(f);return src?`<img class="fac-icon sm" src="${src}" alt="" title="${f}">`:''}).join('');
         const row=document.createElement('div'); row.className='wrow';
         row.innerHTML=`<div class="name" title="${r.name}">${r.name}</div>
           <div class="icons">${icons}</div>
@@ -600,7 +703,6 @@ Sorry. = )
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
     }
 
-    /* ===== Modal: Top Factions (nome 22ch, barra logo após o nome) ===== */
     function openFactionsModal(){
       $('#modalTitle').textContent='Top Factions — Stats';
       modalChart.innerHTML='';
@@ -636,16 +738,13 @@ Sorry. = )
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
     }
 
-    // Botões View more
     moreStatsBtn?.addEventListener('click', ()=>{ if(games.length) openWinnersModal(); });
     factionStatsBtn?.addEventListener('click', ()=>{ if(games.length) openFactionsModal(); });
 
-    // Fechar modal
     modalClose.addEventListener('click', ()=>{ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); });
     modal.addEventListener('click',(e)=>{ if(e.target===modal){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); }});
     window.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal.classList.contains('show')){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); }});
 
-    // Colapsadores + carets (setas)
     function setSectionCollapsed(targetId, collapsed){
       const sec = document.getElementById(targetId)?.closest('.card'); if(!sec) return;
       const content = document.getElementById(targetId);
@@ -678,7 +777,6 @@ Sorry. = )
       });
     });
 
-    // Import/Export/Reset
     exportBtn.onclick=()=>{const data=JSON.stringify(games,null,2);const blob=new Blob([data],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ti4_games.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)};
     importInput.onchange=(e)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const incoming=JSON.parse(reader.result);if(!Array.isArray(incoming))throw new Error('Invalid file');const ids=new Set(games.map(g=>g.id));let added=0;for(const g of incoming){if(g&&typeof g==='object'&&g.id&&!ids.has(g.id)){
               if(Number.isFinite(g.durationHours) && !Number.isFinite(g.durationMinutes)){ g.durationMinutes=Math.round(Number(g.durationHours)*60); delete g.durationHours; }
@@ -686,16 +784,14 @@ Sorry. = )
             }}window.saveGames(games);render();alert(`Imported ${added} game(s).`)}catch(err){alert('Failed to import: '+err.message)}finally{importInput.value=''}};reader.readAsText(file)};
     resetBtn.onclick=()=>{if(confirm('Delete ALL logged games? This cannot be undone.')){games=[];window.saveGames(games);render()}};
 
-    // Atalhos/sort
     window.addEventListener('keydown',(ev)=>{if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='s'){ev.preventDefault();form.requestSubmit()}});
     sortBy?.addEventListener('change',render); sortDir?.addEventListener('change',render);
 
-    // Render inicial
     render();
   </script>
 
 <script>
-/* ======= Supabase sync (não altera layout) ======= */
+/* ======= Supabase sync ======= */
 const SUPABASE_URL = 'https://vrivmniufxmftouzvjfo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZtbml1ZnhtZnRvdXp2amZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNDM4NDIsImV4cCI6MjA5NjkxOTg0Mn0.YsYz-ZPEyQ0Q-cdfHRlQRcvhT0f0aS2HdajbniWM4kg';
 
@@ -728,7 +824,6 @@ async function __getGameIdBySlug(){
   return data.id;
 }
 
-// carrega eventos -> window.games
 async function __loadFromSupabase(){
   if(!supabaseClient || !__slug) return;
   try{
@@ -743,14 +838,9 @@ async function __loadFromSupabase(){
     if(error) throw error;
 
     const arr = (data || []).map(r => r.payload || {}).filter(x => x && x.id);
-
-    // atualiza variáveis
     games = Array.isArray(arr) ? arr : [];
     window.games = games;
-
-    // força UI atualizar
     if (typeof window.render === 'function') window.render();
-
     __flash('Loaded from Supabase', true);
   }catch(e){
     console.warn(e);
@@ -758,38 +848,28 @@ async function __loadFromSupabase(){
   }
 }
 
-// intercepta saveGames -> grava tudo em events (substitui conjunto)
 (function __overrideSave(){
   if(!supabaseClient || !__slug) return;
-
   const __origSave = window.saveGames || function(){};
   let __syncTimer = null;
 
   window.saveGames = function(arr){
-    // fallback local SEMPRE
     __origSave(arr);
-
     clearTimeout(__syncTimer);
     __syncTimer = setTimeout(async ()=>{
       try{
         const gameId = await __getGameIdBySlug();
-
-        // apaga eventos antigos desse log
         const { error: delErr } = await supabaseClient
           .from('events')
           .delete()
           .eq('game_id', gameId)
           .eq('type', 'ADD_GAME_ENTRY');
-
         if(delErr) throw delErr;
-
-        // insere todos os jogos atuais como eventos
         const rows = (arr||[]).map(g=>({ game_id: gameId, type:'ADD_GAME_ENTRY', payload:g }));
         if(rows.length){
           const { error: insErr } = await supabaseClient.from('events').insert(rows);
           if(insErr) throw insErr;
         }
-
         __flash('Saved to Supabase', true);
       }catch(e){
         console.error(e);
@@ -799,22 +879,16 @@ async function __loadFromSupabase(){
   };
 })();
 
-// realtime (se marcado em Publications)
+if(__slug) __loadFromSupabase();
+
 (function __subscribeRealtime(){
   if(!supabaseClient || !__slug) return;
-
   supabaseClient.channel('rt:log')
     .on('postgres_changes', { event:'*', schema:'public', table:'events' }, (payload)=>{
       if(payload?.new?.type === 'ADD_GAME_ENTRY'){ __loadFromSupabase(); }
     })
     .subscribe();
 })();
-
-(async function init(){
-  if(__slug) await __loadFromSupabase();
-})();
 </script>
-
-
 </body>
 </html>
