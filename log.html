@@ -23,11 +23,11 @@
     .row{display:grid;grid-template-columns:minmax(0, 1.28fr) minmax(0, 1fr);gap:14px}
     @media (max-width:980px){
       .row{grid-template-columns:1fr}
-      form .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-      form .grid > div:nth-child(1), form .grid > div:nth-child(2) { grid-column: span 1; }
-      form .grid > div:nth-child(3) { grid-column: span 2; display: flex; justify-content: space-between; gap: 8px; }
-      .player-row { grid-template-columns: 1fr; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-      .player-row > * { width: 100% !important; }
+      form .grid { display: flex; flex-direction: column; gap: 16px; }
+      form .grid > div { width: 100% !important; }
+      form .grid > div:nth-child(3) { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; }
+      .player-row { grid-template-columns: 1fr; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 8px; }
+      .player-row > * { width: 100% !important; height: 44px; }
       .player-row > div:nth-child(2) { order: 2; }
       .player-row > select:nth-child(3) { order: 3; }
       .player-row > button:nth-child(4) { order: 4; }
@@ -43,12 +43,16 @@
     input, select, button, textarea{
       background:#0b121a;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:.95rem;outline:none
     }
-    input[type="date"], input[type="time"]{color-scheme:dark}
-    input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="time"]::-webkit-calendar-picker-indicator {
-      filter: invert(1) brightness(1.4);
-      opacity: .95;
+    input[type="date"], input[type="time"] {
+      color-scheme: dark;
+      width: 100%;
+      position: relative;
+    }
+    /* Forçar ícones brancos em navegadores Webkit (Chrome/Edge/Safari) */
+    input::-webkit-calendar-picker-indicator {
+      filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(200%) contrast(100%) !important;
       cursor: pointer;
+      opacity: 1;
     }
     input:focus, select:focus, textarea:focus{border-color:#334155;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
     .btn{cursor:pointer;transition:.15s ease;display:inline-flex;gap:8px;align-items:center;position:relative}
