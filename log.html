@@ -39,13 +39,10 @@
       background:#0b121a;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:.95rem;outline:none
     }
     
-    /* Hide all native icons for date/time */
-    input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="time"]::-webkit-calendar-picker-indicator,
-    input::-webkit-inner-spin-button,
-    input::-webkit-clear-button {
-      display: none !important;
-      -webkit-appearance: none !important;
+    /* Force white icons for date/time */
+    input::-webkit-calendar-picker-indicator {
+      filter: invert(1) brightness(10) !important;
+      cursor: pointer !important;
     }
 
     input:focus, select:focus, textarea:focus{border-color:#334155;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
@@ -284,12 +281,12 @@
   <script>
     const RAW_FACTIONS=["Nekro Virus","Sardakk N'orr","Naalu Collective","Arborec","Winnu","Universities of Jol-Nar","Xxcha Kingdom","Yin Brotherhood","Yssaril Tribes","Barony of Letnev","Clan of Saar","Embers of Muaat","Emirates of Hacan","Federation of Sol","Ghosts of Creuss","L1Z1X Mindnet","Mentak Coalition","Argent Flight","Empyrean","Mahact Gene-Sorcerers","Naaz-Rokha Alliance","Nomad","Titans of Ul","Vuil'Raith Cabal","Council Keleres"];
     const ALL_FACTIONS=[...new Set(RAW_FACTIONS)].sort((a,b)=>a.localeCompare(b));
-    const FACTION_ICON_BASE='./Faction_Icons/';
+    const FACTION_ICON_BASE='../Faction_Icons/';
     const FACTION_ICON_MAP={"Nekro Virus":"Nekro.png","Sardakk N'orr":"Sardakk.png","Naalu Collective":"Naalu.png","Arborec":"Arborec.png","Winnu":"Winnu.png","Universities of Jol-Nar":"Jol Nar.png","Xxcha Kingdom":"Xxcha.png","Yin Brotherhood":"Yin.png","Yssaril Tribes":"Yssaril.png","Barony of Letnev":"Letnev.png","Clan of Saar":"Saar.png","Embers of Muaat":"Muaat.png","Emirates of Hacan":"Hacan.png","Federation of Sol":"Sol.png","Ghosts of Creuss":"Creuss.png","L1Z1X Mindnet":"L1Z1X.png","Mentak Coalition":"Mentak.png","Argent Flight":"Argent.png","Empyrean":"Empyrean.png","Mahact Gene-Sorcerers":"Mahact.png","Naaz-Rokha Alliance":"Naaz-Rokha.png","Nomad":"Nomad.png","Titans of Ul":"Titans.png","Vuil'Raith Cabal":"Vuil'Raith.png","Council Keleres":"Keleres.png"};
 
     const SUPABASE_URL = 'https://vrivmniufxmftouzvjfo.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZtbml1ZnhtZnRvdXp2amZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNDM4NDIsImV4cCI6MjA5NjkxOTg0Mn0.YsYz-ZPEyQ0Q-cdfHRlQRcvhT0f0aS2HdajbniWM4kg';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZtbml1ZnhtZnRvdXp2amZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNDM4NDIsImV4cCI6MjA5NjkxOTg0Mn0.YsYz-ZPEyQ0Q-cdfHRlQRcvhT0f0aS2HdajbniWM4kg';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let games = [];
     const slug = window.location.pathname.split('/').pop() || 'TSU';
