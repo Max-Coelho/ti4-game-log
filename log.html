@@ -43,7 +43,7 @@
       background:#0b121a;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:.95rem;outline:none
     }
     
-    /* Date and Time inputs with white icons */
+    /* Date and Time inputs without icons */
     input[type="date"], input[type="time"] {
       color-scheme: dark !important;
       width: 100% !important;
@@ -54,30 +54,16 @@
       position: relative;
     }
     
-    /* Force white icons using webkit indicators and filters */
-    input::-webkit-calendar-picker-indicator {
-      filter: invert(1) brightness(10) !important;
-      cursor: pointer !important;
-      opacity: 1 !important;
-      display: block !important;
-      position: absolute;
-      right: 10px;
-    }
-    
-    /* Remove datalist arrow and other default webkit buttons */
+    /* Hide native icons completely */
     input::-webkit-calendar-picker-indicator, 
-    input::-webkit-list-button,
-    input::-webkit-inner-spin-button {
-      filter: invert(1) brightness(10) !important;
-    }
-    
-    /* Specifically target the text inputs to hide any arrow */
-    input[type="text"]::-webkit-calendar-picker-indicator {
+    input::-webkit-inner-spin-button,
+    input::-webkit-clear-button {
       display: none !important;
+      -webkit-appearance: none !important;
     }
 
     input:focus, select:focus, textarea:focus{border-color:#334155;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
-    .btn{cursor:pointer;transition:.15s ease;display:inline-flex;gap:8px;align-items:center;position:relative}
+    .btn{cursor:pointer;transition:.15s ease;display:inline-flex;gap:8px;align-items:center;position:relative;justify-content:center}
     
     /* Animated Border Effect */
     .btn-animated { overflow: hidden; }
@@ -95,10 +81,10 @@
     .btn.primary{background:linear-gradient(90deg, rgba(96,165,250,.18), rgba(96,165,250,.10));border-color:#334155}
     .btn.primary:hover{transform:translateY(-1px);border-color:#3b82f6}
     .btn.ghost{background:transparent; color:#64748b; border:1px solid var(--border);}
+    .btn.ghost:hover{color:var(--text);border-color:var(--accent)}
     .btn.danger{border-color:#7f1d1d;background:linear-gradient(90deg, rgba(239,68,68,.15), rgba(239,68,68,.08))}
     .btn.small{padding:6px 8px;font-size:.85rem}
-    .btn.glow-red{border-color:var(--danger)!important; animation: flashRed .6s ease}
-    @keyframes flashRed{0%{box-shadow:0 0 0 0 rgba(239,68,68,0)}30%{box-shadow:0 0 0 4px rgba(239,68,68,.35)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+    .btn.active{border-color:var(--accent);color:var(--text);background:rgba(96,165,250,0.1)}
 
     /* Custom Faction Dropdown */
     .custom-select-wrapper {
@@ -196,8 +182,8 @@
     .custom-option img { width: 20px; height: 20px; object-fit: contain; }
 
     /* players list */
-    .player-row{display:grid;grid-template-columns:minmax(0, 1.2fr) minmax(0, 1.4fr) minmax(0, .6fr) auto;gap:8px;align-items:center}
-    .player-row + .player-row{margin-top:8px}
+    .player-row{display:grid;grid-template-columns:minmax(0, 1fr) minmax(0, 1fr) auto;gap:12px;align-items:center}
+    .player-row + .player-row{margin-top:12px}
 
     /* stats grid */
     .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 10px}
@@ -228,6 +214,12 @@
     .dialog header strong{color:#0b0f14;font-weight:800;text-align:center}
     .dialog header .close{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer}
     .dialog .content{padding:14px}
+    
+    /* Delete Modal Specific */
+    .delete-dialog { max-width: 400px; text-align: center; }
+    .delete-dialog .content { padding: 24px; }
+    .delete-dialog p { color: var(--muted); margin-bottom: 20px; }
+    .delete-dialog input { margin-bottom: 20px; text-align: center; }
   </style>
 </head>
 <body>
@@ -252,15 +244,22 @@
               <label>Duration (HH:MM)</label><br/>
               <input type="time" id="gameDurationTime" required />
             </div>
-            <div style="grid-column:span 12;display:flex;justify-content:flex-end;gap:8px;margin:4px 0">
-              <button type="button" id="prefill6" class="btn ghost small">+ 6 Players</button>
-              <button type="button" id="addPlayer" class="btn ghost small">+ Player</button>
+            <div style="grid-column:span 12;margin-top:12px">
+              <label>Number of Players</label>
+              <div id="playerCountSelect" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+                <button type="button" class="btn ghost small" data-count="3">3 Players</button>
+                <button type="button" class="btn ghost small" data-count="4">4 Players</button>
+                <button type="button" class="btn ghost small" data-count="5">5 Players</button>
+                <button type="button" class="btn ghost small" data-count="6">6 Players</button>
+                <button type="button" class="btn ghost small" data-count="7">7 Players</button>
+                <button type="button" class="btn ghost small" data-count="8">8 Players</button>
+              </div>
             </div>
           </div>
 
-          <div id="players" style="margin-top:12px"></div>
+          <div id="players" style="margin-top:16px"></div>
 
-          <div style="margin-top:20px;display:flex;align-items:center;justify-content:flex-end;gap:12px">
+          <div style="margin-top:24px;display:flex;align-items:center;justify-content:flex-end;gap:12px">
             <span id="saveStatus" class="muted" style="font-size:.8rem"></span>
             <button type="button" id="clearForm" class="btn ghost">Clear</button>
             <button type="submit" class="btn primary btn-animated" style="padding:10px 24px;font-weight:700">Save Game</button>
@@ -318,6 +317,24 @@
     </div>
   </div>
 
+  <!-- Custom Delete Modal -->
+  <div id="deleteModal" class="modal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay);z-index:1000">
+    <div class="dialog delete-dialog">
+      <header style="background:var(--danger)">
+        <strong style="color:white">Delete Entire Log?</strong>
+      </header>
+      <div class="content">
+        <p>This action is <strong>permanent</strong> and cannot be undone. All game records in this log will be deleted.</p>
+        <p>Please type the log ID <span id="confirmSlugName" style="color:white;font-weight:bold"></span> to confirm:</p>
+        <input type="text" id="deleteConfirmInput" placeholder="Type slug here..." style="width:100%">
+        <div style="display:flex;gap:12px">
+          <button id="cancelDeleteBtn" class="btn ghost" style="flex:1">Cancel</button>
+          <button id="confirmDeleteBtn" class="btn danger" style="flex:1" disabled>Delete Forever</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="modal">
     <div class="dialog">
       <header>
@@ -329,24 +346,10 @@
   </div>
 
   <script>
-    const MIN_PLAYERS=3, MAX_PLAYERS=8;
-    const RAW_FACTIONS=[
-      "Nekro Virus","Sardakk N'orr","Naalu Collective","Arborec","Winnu","Universities of Jol-Nar",
-      "Xxcha Kingdom","Yin Brotherhood","Yssaril Tribes","Barony of Letnev","Clan of Saar","Embers of Muaat",
-      "Emirates of Hacan","Federation of Sol","Ghosts of Creuss","L1Z1X Mindnet","Mentak Coalition",
-      "Argent Flight","Empyrean","Mahact Gene-Sorcerers","Naaz-Rokha Alliance","Nomad","Titans of Ul",
-      "Vuil'Raith Cabal","Council Keleres"
-    ];
+    const RAW_FACTIONS=["Nekro Virus","Sardakk N'orr","Naalu Collective","Arborec","Winnu","Universities of Jol-Nar","Xxcha Kingdom","Yin Brotherhood","Yssaril Tribes","Barony of Letnev","Clan of Saar","Embers of Muaat","Emirates of Hacan","Federation of Sol","Ghosts of Creuss","L1Z1X Mindnet","Mentak Coalition","Argent Flight","Empyrean","Mahact Gene-Sorcerers","Naaz-Rokha Alliance","Nomad","Titans of Ul","Vuil'Raith Cabal","Council Keleres"];
     const ALL_FACTIONS=[...new Set(RAW_FACTIONS)].sort((a,b)=>a.localeCompare(b));
     const FACTION_ICON_BASE='./Faction_Icons/';
-    const FACTION_ICON_MAP={
-      "Nekro Virus":"Nekro.png","Sardakk N'orr":"Sardakk.png","Naalu Collective":"Naalu.png","Arborec":"Arborec.png","Winnu":"Winnu.png",
-      "Universities of Jol-Nar":"Jol Nar.png","Xxcha Kingdom":"Xxcha.png","Yin Brotherhood":"Yin.png","Yssaril Tribes":"Yssaril.png",
-      "Barony of Letnev":"Letnev.png","Clan of Saar":"Saar.png","Embers of Muaat":"Muaat.png","Emirates of Hacan":"Hacan.png",
-      "Federation of Sol":"Sol.png","Ghosts of Creuss":"Creuss.png","L1Z1X Mindnet":"L1Z1X.png","Mentak Coalition":"Mentak.png",
-      "Argent Flight":"Argent.png","Empyrean":"Empyrean.png","Mahact Gene-Sorcerers":"Mahact.png","Naaz-Rokha Alliance":"Naaz-Rokha.png",
-      "Nomad":"Nomad.png","Titans of Ul":"Titans.png","Vuil'Raith Cabal":"Vuil'Raith.png","Council Keleres":"Keleres.png"
-    };
+    const FACTION_ICON_MAP={"Nekro Virus":"Nekro.png","Sardakk N'orr":"Sardakk.png","Naalu Collective":"Naalu.png","Arborec":"Arborec.png","Winnu":"Winnu.png","Universities of Jol-Nar":"Jol Nar.png","Xxcha Kingdom":"Xxcha.png","Yin Brotherhood":"Yin.png","Yssaril Tribes":"Yssaril.png","Barony of Letnev":"Letnev.png","Clan of Saar":"Saar.png","Embers of Muaat":"Muaat.png","Emirates of Hacan":"Hacan.png","Federation of Sol":"Sol.png","Ghosts of Creuss":"Creuss.png","L1Z1X Mindnet":"L1Z1X.png","Mentak Coalition":"Mentak.png","Argent Flight":"Argent.png","Empyrean":"Empyrean.png","Mahact Gene-Sorcerers":"Mahact.png","Naaz-Rokha Alliance":"Naaz-Rokha.png","Nomad":"Nomad.png","Titans of Ul":"Titans.png","Vuil'Raith Cabal":"Vuil'Raith.png","Council Keleres":"Keleres.png"};
 
     const SUPABASE_URL = 'https://vrivmniufxmftouzvjfo.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZtbmkxdWZ4bWZ0b3V6dmpmbyIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzgxMTU4NDE4LCJleHAiOjIwOTY3MzQ0MTh9.Z0Z5V_L6W_8q6N_Z6W_8q6N_Z6W_8q6N_Z6W_8q6N_Z';
@@ -355,6 +358,7 @@
     let games = [];
     const slug = window.location.pathname.split('/').pop() || 'TSU';
     document.getElementById('slugDisplay').textContent = slug;
+    document.getElementById('confirmSlugName').textContent = slug;
 
     async function fetchGames() {
       const { data, error } = await _supabase.from('games').select('*').eq('slug', slug);
@@ -371,8 +375,7 @@
     const flashRed=(el)=>{el.classList.add('glow-red');setTimeout(()=>el.classList.remove('glow-red'),650)};
 
     const gameDate=$('#gameDate'); const gameDurationTime=$('#gameDurationTime'); const playersWrap=$('#players');
-    const addPlayerBtn=$('#addPlayer'); const prefill6Btn=$('#prefill6'); const form=$('#gameForm');
-    const gamesList=$('#gamesList'); const sortBy=$('#sortBy'); const sortDir=$('#sortDir');
+    const form=$('#gameForm'); const gamesList=$('#gamesList'); const sortBy=$('#sortBy'); const sortDir=$('#sortDir');
     const statsGrid=$('#statsGrid'); const winnersChart=$('#winnersChart'); const factionsChart=$('#factionsChart'); const pointsChart=$('#pointsChart');
     const clearFormBtn=$('#clearForm'); const modal=$('#modal'); const modalClose=$('#modalClose'); const modalChart=$('#modalChart');
 
@@ -399,13 +402,8 @@
       hiddenInput.required = true;
 
       const updateUI = (val) => {
-        if(val) {
-          select.classList.add('filled');
-          select.innerHTML = `<span>${labelWithIconHTML(val)}</span>`;
-        } else {
-          select.classList.remove('filled');
-          select.innerHTML = '<span>Select faction</span>';
-        }
+        if(val) { select.classList.add('filled'); select.innerHTML = `<span>${labelWithIconHTML(val)}</span>`; }
+        else { select.classList.remove('filled'); select.innerHTML = '<span>Select faction</span>'; }
       };
 
       const selectOption = (val) => {
@@ -424,13 +422,11 @@
       const renderOptions = () => {
         options.innerHTML = '';
         const selected = $$('.custom-select-wrapper').map(w => w.value).filter(Boolean);
-        
         const empty = document.createElement('div');
         empty.className = 'custom-option';
         empty.innerHTML = '<span>Select faction</span>';
         empty.onclick = () => selectOption('');
         options.appendChild(empty);
-
         ALL_FACTIONS.forEach(f => {
           const opt = document.createElement('div');
           opt.className = 'custom-option' + (selected.includes(f) && hiddenInput.value !== f ? ' disabled' : '');
@@ -442,23 +438,14 @@
 
       wrapper.append(select, options, hiddenInput);
       wrapper.renderOptions = renderOptions;
-      
-      Object.defineProperty(wrapper, 'value', {
-        get: () => hiddenInput.value,
-        set: (v) => { hiddenInput.value = v; updateUI(v); }
-      });
-
+      Object.defineProperty(wrapper, 'value', { get: () => hiddenInput.value, set: (v) => { hiddenInput.value = v; updateUI(v); } });
       return wrapper;
     }
 
-    function createPlayerRow(pref={}){
+    function createPlayerRow(idx, pref={}){
       const row=document.createElement('div');row.className='player-row';
-      const idx = $$('.player-row', playersWrap).length + 1;
-      
       const name=document.createElement('input');
-      name.type='text';
-      name.placeholder=`Add Player ${idx} Name...`;
-      name.required=true;
+      name.type='text'; name.placeholder=`Add Player ${idx} Name...`; name.required=true;
       if(pref.name){name.value=pref.name;name.classList.add('filled');}
       name.oninput=()=>{if(name.value.trim())name.classList.add('filled');else name.classList.remove('filled');};
       
@@ -471,32 +458,29 @@
       if(vp.value !== '0') vp.classList.add('filled');
       vp.onchange=()=>{if(vp.value!=='0')vp.classList.add('filled');else vp.classList.remove('filled');};
       
-      const del=document.createElement('button');del.type='button';del.className='btn ghost small';del.textContent='Remove';
-      del.onclick=()=>{
-        if($$('.player-row',playersWrap).length<=MIN_PLAYERS){flashRed(del);return}
-        row.remove();
-        updatePlayerPlaceholders();
-        updateFactionOptions();
-      };
-      
-      row.append(name,faction,vp,del);playersWrap.appendChild(row);updateFactionOptions();
+      row.append(name,faction,vp);playersWrap.appendChild(row);updateFactionOptions();
     }
 
-    function updatePlayerPlaceholders() {
-      $$('.player-row', playersWrap).forEach((row, i) => {
-        const input = row.querySelector('input[type="text"]');
-        if (input) input.placeholder = `Add Player ${i + 1} Name...`;
-      });
+    function setPlayerCount(count) {
+      playersWrap.innerHTML = '';
+      for(let i=1; i<=count; i++) createPlayerRow(i);
+      $$('#playerCountSelect button').forEach(b => b.classList.toggle('active', parseInt(b.dataset.count) === count));
     }
+
+    $$('#playerCountSelect button').forEach(btn => {
+      btn.onclick = () => setPlayerCount(parseInt(btn.dataset.count));
+    });
 
     function updateFactionOptions(){ $$('.custom-select-wrapper').forEach(w => { if(w.renderOptions) w.renderOptions(); }); }
 
-    function ensureMinPlayers(min=MIN_PLAYERS){while($$('.player-row',playersWrap).length<min){createPlayerRow()}} 
-    ensureMinPlayers(MIN_PLAYERS);
+    setPlayerCount(6);
     
-    addPlayerBtn.onclick=()=>{if($$('.player-row',playersWrap).length>=MAX_PLAYERS){flashRed(addPlayerBtn);return}createPlayerRow();};
-    prefill6Btn.onclick=()=>{playersWrap.innerHTML='';for(let i=0;i<6;i++)createPlayerRow();updateFactionOptions()};
-    clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updatePlayerPlaceholders();gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
+    clearFormBtn.onclick=()=>{
+      const currentCount = parseInt($$('#playerCountSelect button.active')[0]?.dataset.count || 6);
+      setPlayerCount(currentCount);
+      gameDate.valueAsDate=new Date();
+      gameDurationTime.value='06:00';
+    };
 
     document.addEventListener('click', () => $$('.custom-options').forEach(o => o.classList.remove('show')));
 
@@ -514,20 +498,33 @@
       clearFormBtn.click();
     };
 
-    const deleteLogBtn = document.getElementById('deleteLogBtn');
-    deleteLogBtn.onclick = async () => {
-      const confirmSlug = prompt(`WARNING: This action cannot be undone.\n\nTo confirm deletion of this entire log and all its data, please type the log ID/slug below:\n\n${slug}`);
-      if (confirmSlug === slug) {
-        try {
-          const { error } = await _supabase.from('games').delete().eq('slug', slug);
-          if (error) throw error;
-          window.location.href = '/';
-        } catch (err) {
-          console.error('Error deleting log:', err);
-          alert('Error deleting log. Please try again.');
-        }
-      } else if (confirmSlug !== null) {
-        alert('Confirmation failed. The log ID you typed does not match.');
+    // Custom Delete Logic
+    const deleteModal = $('#deleteModal');
+    const deleteConfirmInput = $('#deleteConfirmInput');
+    const confirmDeleteBtn = $('#confirmDeleteBtn');
+    const cancelDeleteBtn = $('#cancelDeleteBtn');
+
+    $('#deleteLogBtn').onclick = () => {
+      deleteModal.style.display = 'flex';
+      deleteConfirmInput.value = '';
+      confirmDeleteBtn.disabled = true;
+      deleteConfirmInput.focus();
+    };
+
+    deleteConfirmInput.oninput = () => {
+      confirmDeleteBtn.disabled = deleteConfirmInput.value !== slug;
+    };
+
+    cancelDeleteBtn.onclick = () => deleteModal.style.display = 'none';
+
+    confirmDeleteBtn.onclick = async () => {
+      try {
+        const { error } = await _supabase.from('games').delete().eq('slug', slug);
+        if (error) throw error;
+        window.location.href = '/';
+      } catch (err) {
+        console.error('Error deleting log:', err);
+        alert('Error deleting log. Please try again.');
       }
     };
 
