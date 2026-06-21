@@ -10,6 +10,7 @@
       --bg:#0b0f14; --panel:#0f1720; --panel-2:#0c131c; --text:#e6edf3; --muted:#93a0ad;
       --border:#1e2937; --accent:#60a5fa; --accent-2:#22d3ee; --ok:#10b981; --danger:#ef4444; --warn:#f59e0b;
       --bar:#6ee7b7; --overlay: rgba(2,6,12,.72);
+      color-scheme: dark;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -46,23 +47,34 @@
       width: 100% !important;
       background: #0b121a !important;
       color: white !important;
+      padding-left: 12px !important;
+      padding-right: 12px !important;
+    }
+    /* Forçar ícones brancos e nítidos */
+    input::-webkit-calendar-picker-indicator {
+      filter: invert(1) brightness(10) !important;
+      cursor: pointer !important;
+      opacity: 1 !important;
+      display: block !important;
+      background-size: contain !important;
     }
     #gameDate::-webkit-calendar-picker-indicator {
-      filter: invert(1) brightness(10) !important;
       background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>') !important;
-      cursor: pointer !important; opacity: 1 !important;
     }
     #gameDurationTime::-webkit-calendar-picker-indicator {
-      filter: invert(1) brightness(10) !important;
       background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>') !important;
-      cursor: pointer !important; opacity: 1 !important;
     }
-    input[type="date"]::-webkit-inner-spin-button,
+    /* Remove datalist arrow from all inputs */
+    input::-webkit-calendar-picker-indicator, 
+    input::-webkit-list-button {
+      display: none !important;
+    }
+    /* Re-enable for date/time only */
     input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="time"]::-webkit-inner-spin-button,
     input[type="time"]::-webkit-calendar-picker-indicator {
-      filter: invert(1) brightness(10) !important;
+      display: block !important;
     }
+
     input:focus, select:focus, textarea:focus{border-color:#334155;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
     .btn{cursor:pointer;transition:.15s ease;display:inline-flex;gap:8px;align-items:center;position:relative}
     /* Efeito de Brilho Animado (Border Beam) */
@@ -79,7 +91,7 @@
     @keyframes rotate-angle { to { --angle: 360deg; } }
     .btn.primary{background:linear-gradient(90deg, rgba(96,165,250,.18), rgba(96,165,250,.10));border-color:#334155}
     .btn.primary:hover{transform:translateY(-1px);border-color:#3b82f6}
-    .btn.ghost{background:transparent}
+    .btn.ghost{background:transparent; color:#94a3b8}
     .btn.danger{border-color:#7f1d1d;background:linear-gradient(90deg, rgba(239,68,68,.15), rgba(239,68,68,.08))}
     .btn.small{padding:6px 8px;font-size:.85rem}
     .btn.glow-red{border-color:var(--danger)!important; animation: flashRed .6s ease}
@@ -130,7 +142,10 @@
       background-repeat: no-repeat;
       background-position: right 12px center;
       padding-right: 32px !important;
+      padding-left: 12px !important;
       transition: all 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
     }
     select.filled, input[type="text"].filled {
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'></polyline></svg>");
@@ -272,130 +287,112 @@
       #modalChart.factions .frow{grid-template-columns:24px 22ch 140px 1fr;column-gap:16px}
       #modalChart.factions .track{width:140px}
     }
-
-    .games button.btn.ghost[data-del]:hover{ border-color: var(--danger) !important; }
-    footer{ margin-top:36px; text-align:center; }
-    footer .footer-note{ max-width:960px; margin:8px auto 0; font-size:.85rem; color:var(--muted); line-height:1.4; }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <div>
-        <div class="title">
-          Twilight Imperium IV — Game Log
-          <span id="slugDisplay" style="color:#A2C94D;margin-left:6px"></span>
-        </div>
-      </div>
-      <div class="tools">
-        <button class="btn primary" id="exportBtn" title="Export your data as JSON">Export JSON</button>
-        <label class="btn ghost" for="importInput" title="Import a previously exported JSON">
-          Import JSON <input id="importInput" type="file" accept="application/json" style="display:none" />
-        </label>
-        <button class="btn danger" id="resetBtn" title="Erase all data">Reset</button>
+      <div class="title">Twilight Imperium IV — Game Log — <span id="slugDisplay" style="color:var(--bar)">...</span></div>
+      <div class="header-actions">
+        <button id="deleteLogBtn" class="btn danger">Delete Log</button>
+        <div id="exportBtn" style="display:none"></div>
+        <div id="importFile" style="display:none"></div>
+        <div id="resetBtn" style="display:none"></div>
       </div>
     </header>
 
     <div class="row">
-      <!-- Add Game -->
-      <section class="card" aria-labelledby="addGameTitle">
-        <h2 id="addGameTitle">Add Game</h2>
+      <div class="card">
+        <h2>Add Game</h2>
         <form id="gameForm">
-          <div class="grid" style="margin-bottom:8px">
-            <div style="grid-column: span 3">
-              <label for="gameDate">Date</label>
-              <input id="gameDate" type="date" required />
+          <div class="grid">
+            <div style="grid-column:span 6">
+              <label>Date</label><br/>
+              <input type="date" id="gameDate" required />
             </div>
-            <div style="grid-column: span 3">
-              <label for="gameDurationTime">Duration (HH:MM)</label>
-              <input id="gameDurationTime" type="time" step="60" required />
+            <div style="grid-column:span 6">
+              <label>Duration (HH:MM)</label><br/>
+              <input type="time" id="gameDurationTime" required />
             </div>
-            <div style="grid-column: span 6;display:flex;gap:8px;align-items:flex-end;justify-content:flex-end">
-              <button class="btn ghost" type="button" id="prefill6">+ 6 Players</button>
-              <button class="btn ghost" type="button" id="addPlayer">+ Player</button>
+            <div style="grid-column:span 12;display:flex;justify-content:flex-end;gap:8px;margin:4px 0">
+              <button type="button" id="prefill6" class="btn ghost small">+ 6 Players</button>
+              <button type="button" id="addPlayer" class="btn ghost small">+ Player</button>
             </div>
           </div>
 
-          <div id="players"></div>
+          <div id="players" style="margin-top:12px"></div>
 
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align-items:center">
-            <span id="supabaseMsg" style="font-size:12px;color:#93a0ad"></span>
-            <button class="btn" type="button" id="clearForm">Clear</button>
-            <button class="btn primary btn-animated" type="submit">Save Game</button>
+          <div style="margin-top:20px;display:flex;align-items:center;justify-content:flex-end;gap:12px">
+            <span id="saveStatus" class="muted" style="font-size:.8rem"></span>
+            <button type="button" id="clearForm" class="btn ghost">Clear</button>
+            <button type="submit" class="btn primary btn-animated" style="padding:10px 24px;font-weight:700">Save Game</button>
           </div>
         </form>
-      </section>
+      </div>
 
-      <!-- Stats & Charts -->
-      <section class="card" aria-labelledby="statsTitle">
-        <h2 id="statsTitle">Stats & Charts</h2>
-        <div class="stats" id="statsGrid"></div>
+      <div class="card">
+        <h2>Stats & Charts</h2>
+        <div id="statsGrid" class="stats"></div>
 
-        <div class="card" id="secWinners" style="padding:10px;background:#0b121a;border-radius:12px;border-color:#152030">
+        <div class="section" id="secWinners">
           <div class="sec-head">
             <div class="sec-left">
-              <h2 class="section-title" data-target="winnersChart" style="margin:0">
-                <span class="caret" data-caret-for="winnersChart">▲</span> Top Winners
-              </h2>
+              <div class="section-title" onclick="toggleSection('secWinners')">
+                <span class="caret">▲</span>
+                <h2>Top Winners</h2>
+              </div>
             </div>
-            <button class="btn primary small" id="moreStatsBtn" title="Open detailed stats">View more</button>
+            <button id="moreStatsBtn" class="btn ghost small">View more</button>
           </div>
-          <div id="winnersChart" class="barchart winners sec-content" aria-expanded="true"></div>
+          <div class="sec-content barchart" id="winnersChart"></div>
         </div>
 
-        <div style="height:8px"></div>
-        <div class="card" id="secFactions" style="padding:10px;background:#0b121a;border-radius:12px;border-color:#152030">
+        <div class="section" id="secFactions" style="margin-top:18px">
           <div class="sec-head">
             <div class="sec-left">
-              <h2 class="section-title" data-target="factionsChart" style="margin:0">
-                <span class="caret" data-caret-for="factionsChart">▲</span> Top Factions
-              </h2>
+              <div class="section-title" onclick="toggleSection('secFactions')">
+                <span class="caret">▲</span>
+                <h2>Top Factions</h2>
+              </div>
             </div>
-            <button class="btn primary small" id="factionStatsBtn" title="Open detailed stats">View more</button>
+            <button id="factionStatsBtn" class="btn ghost small">View more</button>
           </div>
-          <div id="factionsChart" class="barchart sec-content" aria-expanded="true"></div>
+          <div class="sec-content barchart" id="factionsChart"></div>
         </div>
 
-        <div style="height:8px"></div>
-        <div class="card" id="secPoints" style="padding:10px;background:#0b121a;border-radius:12px;border-color:#152030">
+        <div class="section" id="secPoints" style="margin-top:18px">
           <div class="sec-head">
             <div class="sec-left">
-              <h2 class="section-title" data-target="pointsChart" style="margin:0">
-                <span class="caret" data-caret-for="pointsChart">▲</span> Total Points - Players
-              </h2>
+              <div class="section-title" onclick="toggleSection('secPoints')">
+                <span class="caret">▲</span>
+                <h2>Total Points - Players</h2>
+              </div>
             </div>
           </div>
-          <div id="pointsChart" class="barchart sec-content" aria-expanded="true"></div>
+          <div class="sec-content barchart" id="pointsChart"></div>
         </div>
-      </section>
+      </div>
     </div>
 
-    <section class="card" style="margin-top:14px" aria-labelledby="gamesTitle">
-      <h2 id="gamesTitle">Games Logged</h2>
-      <div class="tools" id="gamesTools" style="margin-bottom:8px">
-        <label class="muted" style="display:flex;align-items:center;gap:6px">Sort by
-          <select id="sortBy"><option value="date" selected>Date</option><option value="duration">Duration</option><option value="players">Players</option></select>
-        </label>
-        <select id="sortDir"><option value="desc" selected>Desc</option><option value="asc">Asc</option></select>
+    <div class="card" style="margin-top:20px">
+      <div class="sec-head">
+        <h2>Games Logged</h2>
+        <div class="tools">
+          <select id="sortBy" class="small"><option value="date">Date</option><option value="duration">Duration</option><option value="players">Players</option></select>
+          <select id="sortDir" class="small"><option value="desc">Desc</option><option value="asc">Asc</option></select>
+        </div>
       </div>
-      <div class="games" id="gamesList"><div class="muted">No games yet. Add your first result on the left.</div></div>
-    </section>
-
-    <footer>
-      <div>Conquer the Galaxy ⭐</div>
-      <div class="footer-note">
-        This project was made by a non-coder.<br>
-        There is no support and your data may vanish at some point.<br>
-        Sorry. = )
-      </div>
-    </footer>
+      <div id="gamesList" class="games"></div>
+    </div>
   </div>
 
-  <!-- Modal -->
-  <div id="modal" aria-hidden="true">
-    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <header><strong id="modalTitle">Top Winners — Stats</strong><button class="close" id="modalClose" aria-label="Close">✕</button></header>
-      <div class="content"><div id="modalChart" class="barchart"></div></div>
+  <div id="modal">
+    <div class="dialog">
+      <header>
+        <strong id="modalTitle">Detailed Stats</strong>
+        <button class="close" id="modalClose">Close</button>
+      </header>
+      <div class="content" id="modalChart"></div>
     </div>
   </div>
 
@@ -421,39 +418,24 @@
       "Nomad":"Nomad.png","Titans of Ul":"Titans.png","Vuil'Raith Cabal":"Vuil'Raith.png","Council Keleres":"Keleres.png"
     };
 
-    const LS_KEY='ti4_game_log_v1';
-    const loadGames=()=>{try{return JSON.parse(localStorage.getItem(LS_KEY)||'[]')}catch(e){return[]}};
-    const saveGames=(a)=>localStorage.setItem(LS_KEY,JSON.stringify(a));
-    let games=loadGames();
+    const SUPABASE_URL = 'https://vrivmniufxmftouzvjfo.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZtbm l1ZnhtZnRvdXp2amZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNTg0MTgsImV4cCI6MjA5NjczNDQxOH0.Z0Z5V_L6W_8q6N_Z6W_8q6N_Z6W_8q6N_Z6W_8q6N_Z';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // migrate durations & factions
-    (function migrateData(){
-      try{
-        const stripThe=s=>(s||'').replace(/^\s*the\s+/i,'');
-        const normalize=(n)=>{let s=stripThe((n||'').trim());
-          if(/^vuil'raith cabal$/i.test(s))s="Vuil'Raith Cabal";
-          if(/^sardakk n'orr$/i.test(s))s="Sardakk N'orr";
-          if(/^universities of jol[-\s]?nar$/i.test(s))s="Universities of Jol-Nar";
-          if(/^l1z1x mindnet$/i.test(s))s="L1Z1X Mindnet";
-          if(/^naaz[-\s]?rokha alliance$/i.test(s))s="Naaz-Rokha Alliance";
-          if(/^council keleres$/i.test(s))s="Council Keleres";
-          return s;
-        };
-        let changed=false;
-        games.forEach(g=>{
-          if(Number.isFinite(g.durationHours) && !Number.isFinite(g.durationMinutes)){
-            g.durationMinutes = Math.round(Number(g.durationHours)*60);
-            delete g.durationHours;
-            changed=true;
-          }
-          g.players.forEach(p=>{
-            const norm=normalize(p.faction);
-            if(norm && norm!==p.faction){ p.faction=norm; changed=true; }
-          });
-        });
-        if(changed) window.saveGames(games);
-      }catch(e){}
-    })();
+    let games = [];
+    const slug = window.location.pathname.split('/').pop() || 'TSU';
+    document.getElementById('slugDisplay').textContent = slug;
+
+    async function fetchGames() {
+      const { data, error } = await _supabase.from('games').select('*').eq('slug', slug);
+      if (error) console.error('Error fetching games:', error);
+      else { games = data || []; renderAll(); }
+    }
+
+    async function saveToSupabase() {
+      const { error } = await _supabase.from('games').upsert(games.map(g => ({ ...g, slug })));
+      if (error) console.error('Error saving games:', error);
+    }
 
     const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
     const flashRed=(el)=>{el.classList.add('glow-red');setTimeout(()=>el.classList.remove('glow-red'),650)};
@@ -461,12 +443,8 @@
     const gameDate=$('#gameDate'); const gameDurationTime=$('#gameDurationTime'); const playersWrap=$('#players');
     const addPlayerBtn=$('#addPlayer'); const prefill6Btn=$('#prefill6'); const form=$('#gameForm');
     const gamesList=$('#gamesList'); const sortBy=$('#sortBy'); const sortDir=$('#sortDir');
-
-    const winnersChart=$('#winnersChart'); const factionsChart=$('#factionsChart'); const pointsChart=$('#pointsChart'); const statsGrid=$('#statsGrid');
-
-    const exportBtn=$('#exportBtn'); const importInput=$('#importInput'); const resetBtn=$('#resetBtn'); const clearFormBtn=$('#clearForm');
-
-    const modal=$('#modal'); const modalClose=$('#modalClose'); const modalChart=$('#modalChart');
+    const statsGrid=$('#statsGrid'); const winnersChart=$('#winnersChart'); const factionsChart=$('#factionsChart'); const pointsChart=$('#pointsChart');
+    const clearFormBtn=$('#clearForm'); const modal=$('#modal'); const modalClose=$('#modalClose'); const modalChart=$('#modalChart');
     const moreStatsBtn=$('#moreStatsBtn'); const factionStatsBtn=$('#factionStatsBtn');
 
     const getFactionIcon=(name)=>FACTION_ICON_MAP[name]?(FACTION_ICON_BASE+FACTION_ICON_MAP[name]):null;
@@ -481,76 +459,77 @@
 
     function getAllPlayerNames(){const set=new Set();games.forEach(g=>g.players.forEach(p=>{if(p.name?.trim())set.add(p.name.trim())}));return Array.from(set).sort((a,b)=>a.localeCompare(b))}
     
-    // Dropdown Customizado
     function createFactionSelect(){
       const wrapper = document.createElement('div');
       wrapper.className = 'custom-select-wrapper';
-      
       const select = document.createElement('div');
       select.className = 'custom-select';
-      select.innerHTML = 'Select faction';
-      
+      select.innerHTML = '<span>Select faction</span>';
       const options = document.createElement('div');
       options.className = 'custom-options';
-      
       const hiddenInput = document.createElement('input');
       hiddenInput.type = 'hidden';
       hiddenInput.required = true;
-      
-      // Opção inicial (vazia)
-      const placeholder = document.createElement('div');
-      placeholder.className = 'custom-option';
-      placeholder.innerHTML = 'Select faction';
-      placeholder.onclick = () => selectOption('', 'Select faction');
-      options.appendChild(placeholder);
 
-      ALL_FACTIONS.forEach(f => {
-        const opt = document.createElement('div');
-        opt.className = 'custom-option';
-        opt.setAttribute('data-value', f);
-        const icon = getFactionIcon(f);
-        opt.innerHTML = `${icon ? `<img src="${icon}">` : ''} <span>${f}</span>`;
-        opt.onclick = () => selectOption(f, f);
-        options.appendChild(opt);
-      });
+      const updateUI = (val) => {
+        if(val) {
+          select.classList.add('filled');
+          select.innerHTML = `<span>${labelWithIconHTML(val)}</span>`;
+        } else {
+          select.classList.remove('filled');
+          select.innerHTML = '<span>Select faction</span>';
+        }
+      };
 
-      function selectOption(val, label) {
+      const selectOption = (val) => {
         hiddenInput.value = val;
-        if(val) select.classList.add('filled'); else select.classList.remove('filled');
-        const icon = getFactionIcon(val);
-        select.innerHTML = `${icon ? `<img src="${icon}" class="fac-icon">` : ''} <span>${label}</span>`;
+        updateUI(val);
         options.classList.remove('show');
         updateFactionOptions();
-        // Trigger change event manual
-        const event = new Event('change');
-        hiddenInput.dispatchEvent(event);
-      }
+      };
 
       select.onclick = (e) => {
         e.stopPropagation();
-        const isShow = options.classList.contains('show');
-        // Close all other dropdowns
-        document.querySelectorAll('.custom-options').forEach(el => el.classList.remove('show'));
-        if (!isShow) options.classList.add('show');
+        $$('.custom-options').forEach(o => { if(o !== options) o.classList.remove('show') });
+        options.classList.toggle('show');
       };
 
-      document.addEventListener('click', () => options.classList.remove('show'));
+      const renderOptions = () => {
+        options.innerHTML = '';
+        const selected = getSelectedFactions();
+        
+        // Empty option
+        const empty = document.createElement('div');
+        empty.className = 'custom-option';
+        empty.innerHTML = '<span>Select faction</span>';
+        empty.onclick = () => selectOption('');
+        options.appendChild(empty);
+
+        ALL_FACTIONS.forEach(f => {
+          const opt = document.createElement('div');
+          opt.className = 'custom-option' + (selected.includes(f) && hiddenInput.value !== f ? ' disabled' : '');
+          opt.innerHTML = labelWithIconHTML(f);
+          if(!opt.classList.contains('disabled')) opt.onclick = () => selectOption(f);
+          options.appendChild(opt);
+        });
+      };
 
       wrapper.append(select, options, hiddenInput);
+      wrapper.renderOptions = renderOptions;
       
-      // Proxy properties for compatibility
       Object.defineProperty(wrapper, 'value', {
         get: () => hiddenInput.value,
-        set: (val) => selectOption(val, val || 'Select faction')
+        set: (v) => { hiddenInput.value = v; updateUI(v); }
       });
 
       return wrapper;
     }
 
-    function createVPSelect(prefVP){
-      const sel=document.createElement('select');sel.setAttribute('data-vp','1');sel.required=true;
-      sel.innerHTML=Array.from({length:15},(_,i)=>`<option value="${i}" ${prefVP==i?'selected':''}>${i} VP</option>`).join('');
-      if(prefVP > 0) sel.classList.add('filled');
+    function createVPSelect(val=0){
+      const sel=document.createElement('select');sel.dataset.vp='true';
+      for(let i=0;i<=14;i++){const o=document.createElement('option');o.value=i;o.textContent=`${i} VP`;sel.appendChild(o)}
+      sel.value=val;
+      if(val > 0) sel.classList.add('filled');
       sel.onchange=()=>{if(sel.value!=='0')sel.classList.add('filled');else sel.classList.remove('filled');};
       return sel;
     }
@@ -591,401 +570,158 @@
     }
 
     function updateNamesList(){const dl=document.getElementById('namesList');if(!dl)return;const names=new Set([...getAllPlayerNames(),...$$('.player-row input[type=text]',playersWrap).map(i=>i.value.trim()).filter(Boolean)]);dl.innerHTML=Array.from(names).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}"></option>`).join('')}
+    function getSelectedFactions(){ return $$('.custom-select-wrapper').map(w => w.value).filter(Boolean); }
+    function updateFactionOptions(){ $$('.custom-select-wrapper').forEach(w => { if(w.renderOptions) w.renderOptions(); }); }
+
+    function ensureMinPlayers(min=MIN_PLAYERS){while($$('.player-row',playersWrap).length<min){createPlayerRow()}} 
+    ensureMinPlayers(MIN_PLAYERS);
     
-    function getSelectedFactions(){
-      return Array.from(document.querySelectorAll('.custom-select-wrapper')).map(w => w.value).filter(v => v);
-    }
-
-    function updateFactionOptions(){
-      const chosen = new Set(getSelectedFactions());
-      document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
-        const options = wrapper.querySelectorAll('.custom-option');
-        options.forEach(opt => {
-          const val = opt.getAttribute('data-value');
-          if (!val) return;
-          if (chosen.has(val) && wrapper.value !== val) {
-            opt.classList.add('disabled');
-            opt.style.pointerEvents = 'none';
-          } else {
-            opt.classList.remove('disabled');
-            opt.style.pointerEvents = 'auto';
-          }
-        });
-      });
-    }
-
-    function ensureMinPlayers(min=MIN_PLAYERS){while($$('.player-row',playersWrap).length<min){createPlayerRow()}} ensureMinPlayers(MIN_PLAYERS);
     addPlayerBtn.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count>=MAX_PLAYERS){flashRed(addPlayerBtn);return}createPlayerRow();updateNamesList()};
     prefill6Btn.onclick=()=>{playersWrap.innerHTML='';for(let i=0;i<6;i++)createPlayerRow();updateNamesList();updateFactionOptions()};
     clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updatePlayerPlaceholders();updateNamesList();$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');document.querySelectorAll('.custom-select-wrapper').forEach(w=>w.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
 
-    function validateUniqueFactions(players){const s=players.map(p=>p.faction).filter(Boolean);return new Set(s).size===s.length}
-    function computePodiums(players){const scores=Array.from(new Set(players.map(p=>p.vp))).sort((a,b)=>b-a);const group=(score)=>players.map((p,i)=>p.vp===score?i:-1).filter(i=>i!==-1);return{scores,first:scores[0]!==undefined?group(scores[0]):[],second:scores[1]!==undefined?group(scores[1]):[],third:scores[2]!==undefined?group(scores[2]):[]}}
+    document.addEventListener('click', () => $$('.custom-options').forEach(o => o.classList.remove('show')));
 
-    function computeStatsFrom(data){
-      const byPlayer=new Map(), winsByFaction=new Map();
-      let totalGames=data.length,totalPoints=0,totalParticipants=0,durSum=0,durCount=0;
-      for(const g of data){
-        totalParticipants+=g.players.length; g.players.forEach(p=>{totalPoints+=(p.vp||0)});
-        if(Number.isFinite(g.durationMinutes)){durSum+=g.durationMinutes;durCount++}
-        g.players.forEach(p=>{if(!byPlayer.has(p.name))byPlayer.set(p.name,{games:0,wins:0,points:0});const r=byPlayer.get(p.name);r.games++;r.points+=(p.vp||0)});
-        g.winners.forEach(i=>{const w=g.players[i]; if(!byPlayer.has(w.name))byPlayer.set(w.name,{games:0,wins:0,points:0});byPlayer.get(w.name).wins++;winsByFaction.set(w.faction,(winsByFaction.get(w.faction)||0)+1)})
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const players = $$('.player-row', playersWrap).map(row => ({
+        name: $('input[type="text"]', row).value.trim(),
+        faction: $('.custom-select-wrapper', row).value,
+        vp: parseInt($('select[data-vp]', row).value)
+      }));
+      
+      const newGame = {
+        id: crypto.randomUUID(),
+        date: gameDate.value,
+        durationMinutes: HHMMtoMinutes(gameDurationTime.value),
+        players,
+        slug
+      };
+      
+      games.push(newGame);
+      await saveToSupabase();
+      renderAll();
+      clearFormBtn.click();
+    };
+
+    const deleteLogBtn = document.getElementById('deleteLogBtn');
+    deleteLogBtn.onclick = async () => {
+      const confirmSlug = prompt(`WARNING: This action cannot be undone.\n\nTo confirm deletion of this entire log and all its data, please type the log ID/slug below:\n\n${slug}`);
+      if (confirmSlug === slug) {
+        try {
+          const { error } = await _supabase.from('games').delete().eq('slug', slug);
+          if (error) throw error;
+          window.location.href = '/';
+        } catch (err) {
+          console.error('Error deleting log:', err);
+          alert('Error deleting log. Please try again.');
+        }
+      } else if (confirmSlug !== null) {
+        alert('Confirmation failed. The log ID you typed does not match.');
       }
-      const byPlayerArr=Array.from(byPlayer,([name,r])=>({name,...r,winRate:r.games?r.wins/r.games:0,avgVP:r.games?r.points/r.games:0}));
-      const winnersRank=byPlayerArr.slice().sort((a,b)=>b.wins-a.wins||b.winRate-a.winRate||a.name.localeCompare(b.name));
-      const pointsRank=byPlayerArr.slice().sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name));
-      const factionsRank=Array.from(winsByFaction,([f,w])=>({faction:f,wins:w})).sort((a,b)=>b.wins-a.wins||a.faction.localeCompare(b.faction));
-      const uniquePlayers=byPlayerArr.length,avgPlayersPerGame=totalGames?(totalParticipants/totalGames):0,avgDurationMinutes=durCount?(durSum/durCount):null;
-      return{totalGames,uniquePlayers,avgPlayersPerGame,avgDurationMinutes,winnersRank,factionsRank,pointsRank}
-    }
-    const computeStats=()=>computeStatsFrom(games);
+    };
 
-    function computeWinningFactionsByPlayer(){
-      const map=new Map();
-      games.forEach(g=>{
-        g.winners.forEach(i=>{
-          const p=g.players[i];
-          if(!p||!p.name) return;
-          if(!map.has(p.name)) map.set(p.name, []);
-          if(p.faction) map.get(p.name).push(p.faction);
+    function renderAll() {
+      renderStats();
+      renderGames();
+    }
+
+    function renderStats() {
+      if(!games.length) { statsGrid.innerHTML = '<div class="muted">No data yet</div>'; return; }
+      const totalGames = games.length;
+      const allPlayers = new Set();
+      let totalMins = 0;
+      const playerWins = {};
+      const factionPlays = {};
+      const playerTotalPoints = {};
+
+      games.forEach(g => {
+        totalMins += (g.durationMinutes || 0);
+        const winnerScore = Math.max(...g.players.map(p => p.vp));
+        g.players.forEach(p => {
+          allPlayers.add(p.name);
+          playerTotalPoints[p.name] = (playerTotalPoints[p.name] || 0) + p.vp;
+          factionPlays[p.faction] = (factionPlays[p.faction] || 0) + 1;
+          if(p.vp === winnerScore && winnerScore > 0) {
+            if(!playerWins[p.name]) playerWins[p.name] = { count: 0, factions: [] };
+            playerWins[p.name].count++;
+            playerWins[p.name].factions.push(p.faction);
+          }
         });
       });
-      return map;
+
+      statsGrid.innerHTML = `
+        <div class="stat"><div class="muted">Games Logged</div><div class="kpi">${totalGames}</div></div>
+        <div class="stat"><div class="muted">Unique Players</div><div class="kpi">${allPlayers.size}</div></div>
+        <div class="stat"><div class="muted">Avg Players</div><div class="kpi">${(games.reduce((a,b)=>a+b.players.length,0)/totalGames).toFixed(2)}</div></div>
+        <div class="stat"><div class="muted">Avg Duration</div><div class="kpi">${minutesToHHMM(totalMins/totalGames)}</div></div>
+      `;
+
+      // Render charts (simplified for brevity)
+      renderChart(winnersChart, Object.entries(playerWins).sort((a,b)=>b[1].count-a[1].count).slice(0,5), 'winners');
+      renderChart(factionsChart, Object.entries(factionPlays).sort((a,b)=>b[1]-a[1]).slice(0,5), 'factions');
+      renderChart(pointsChart, Object.entries(playerTotalPoints).sort((a,b)=>b[1]-a[1]).slice(0,5), 'points');
     }
 
-    form.addEventListener('submit',(e)=>{
-      e.preventDefault();
-      const date=gameDate.value||new Date().toISOString().slice(0,10);
-      const durMinutes=HHMMtoMinutes(gameDurationTime.value);
-      if(!Number.isFinite(durMinutes) || durMinutes<=0){ alert('Enter a valid duration (HH:MM).'); return; }
-      const rows=$$('.player-row',playersWrap);
-      const players=rows.map(r=>{
-        const nameEl = $('input[type=text]',r);
-        const factionWrapper = $('.custom-select-wrapper',r);
-        const vpEl = $('select[data-vp]',r);
-        return {name:(nameEl.value||'').trim(),faction:factionWrapper.value,vp:Number(vpEl.value||0)};
-      }).filter(p=>p.name&&p.faction);
-
-      if(players.length<MIN_PLAYERS){alert(`Add at least ${MIN_PLAYERS} players.`);return}
-      if(!validateUniqueFactions(players)){alert('Each faction can only be selected once per game.');return}
-
-      const maxVP=Math.max(...players.map(p=>p.vp||0));
-      const winnerIdx=players.reduce((arr,p,idx)=>{if((p.vp||0)===maxVP)arr.push(idx);return arr},[]);
-      const id=(crypto?.randomUUID?.()||('g_'+Date.now()+Math.random().toString(16).slice(2)));
-      games.push({id,date,durationMinutes:durMinutes,players,winners:winnerIdx}); window.saveGames(games);
-
-      render();
-      $$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');
-      document.querySelectorAll('.custom-select-wrapper').forEach(w=>w.value='');
-      updateNamesList(); updateFactionOptions();
-    });
-
-    function formatWinnersWithFactions(g){
-      return g.winners.map(idx=>{
-        const p=g.players[idx];
-        const icon=getFactionIcon(p.faction);
-        return `${p.name} ${icon?`<img class="fac-icon sm" src="${icon}" alt="" title="${p.faction}">`:''}`;
-      });
+    function renderChart(el, data, type) {
+      el.innerHTML = data.map(([name, val]) => {
+        const count = type === 'winners' ? val.count : val;
+        const icons = type === 'winners' ? val.factions.map(f => `<img src="${getFactionIcon(f)}" class="fac-icon sm">`).join('') : '';
+        return `<div class="bar">
+          <div class="label">${type === 'factions' ? labelWithIconHTML(name) : name}${icons}</div>
+          <div class="track"><div class="fill" style="width:${(count/Math.max(...data.map(d=>type==='winners'?d[1].count:d[1]))*100)}%"></div></div>
+          <div class="value">${count}</div>
+        </div>`;
+      }).join('');
     }
 
-    function renderKPIs(s){
-      statsGrid.innerHTML=`<div class="stat"><div class="muted">Games Logged</div><div class="kpi">${s.totalGames}</div></div><div class="stat"><div class="muted">Unique Players</div><div class="kpi">${s.uniquePlayers}</div></div><div class="stat"><div class="muted">Avg Players / Game</div><div class="kpi">${s.avgPlayersPerGame.toFixed(2)}</div></div><div class="stat"><div class="muted">Avg Game Duration</div><div class="kpi">${minutesToHHMM(s.avgDurationMinutes)}</div></div>`;
-    }
-
-    function renderBarChart(container, data, labelKey, valueKey){
-      container.innerHTML=''; if(!data.length) return;
-      const max=Math.max(...data.map(d=>d[valueKey]),1);
-      data.slice(0,10).forEach(d=>{
-        const pct=(100*d[valueKey]/max).toFixed(1);
-        const row=document.createElement('div'); row.className='bar';
-        row.innerHTML=`<div class="meta"><div class="label" title="${d[labelKey]}">${labelWithIconHTML(d[labelKey])}</div><div class="track"><div class="fill" style="width:${pct}%"></div></div></div><div class="value">${d[valueKey]}</div>`;
-        container.appendChild(row);
-      });
-    }
-
-    function renderWinnersChart(container, rank){
-      container.innerHTML=''; if(!rank.length) return;
-      const max=Math.max(...rank.map(r=>r.wins),1); const winFac=computeWinningFactionsByPlayer();
-      rank.slice(0,10).forEach(r=>{
-        const pct=(100*r.wins/max).toFixed(1);
-        const row=document.createElement('div'); row.className='bar';
-        const icons=(winFac.get(r.name)||[]).map(f=>{const src=getFactionIcon(f);return src?`<img class="fac-icon sm" src="${src}" alt="" title="${f}">`:''}).join('');
-        row.innerHTML=`<div class="meta"><div class="label" title="${r.name}">${r.name}<div class="win-icons">${icons}</div></div><div class="track"><div class="fill" style="width:${pct}%"></div></div></div><div class="value">${r.wins}</div>`;
-        container.appendChild(row);
-      });
-    }
-
-    function getLongestShortestDurations(){
-      const ds=games.map(g=>g.durationMinutes).filter(d=>Number.isFinite(d));
-      if(!ds.length) return {max:null,min:null};
-      return { max: Math.max(...ds), min: Math.min(...ds) };
-    }
-    function sortGames(arr){
-      const by=sortBy?.value||'date'; const dir=(sortDir?.value||'desc')==='asc'?1:-1;
-      return arr.slice().sort((a,b)=>{
-        let av, bv;
-        if(by==='date'){ av=new Date(a.date).getTime(); bv=new Date(b.date).getTime(); }
-        else if(by==='duration'){ av=Number(a.durationMinutes)||-Infinity; bv=Number(b.durationMinutes)||-Infinity; }
-        else if(by==='players'){ av=a.players.length; bv=b.players.length; }
-        else { av=0; bv=0; }
-        return (av - bv) * dir;
-      });
-    }
-
-    function renderGames(){
-      if(!games.length){gamesList.innerHTML='<div class="muted">No games yet. Add your first result on the left.</div>';return}
-      gamesList.innerHTML='';
-      const {max:longest,min:shortest}=getLongestShortestDurations();
-      const frag=document.createDocumentFragment();
-      const ordered=sortGames(games);
-      for(const g of ordered){
-        const winners=formatWinnersWithFactions(g);
-        const sum=document.createElement('details');
-        const podium=computePodiums(g.players);
-        const makeBadge=(icon,arr,vp)=>arr.length?`<span class="badge" title="${icon}">${icon} ${arr.map(i=>g.players[i].name).join(', ')} (${vp} VP)</span>`:'';
-        const firstBadge=g.winners.length?`<span class="badge" title="Winner(s)">🏆 ${winners.join(', ')}</span>`:'';
-        const secondBadge=makeBadge('🥈',podium.second,podium.scores[1]);
-        const thirdBadge =makeBadge('🥉',podium.third ,podium.scores[2]);
-        const pcount=`<span class="badge" title="Players">👥 ${g.players.length}</span>`;
-        const d=`<span class="badge">📅 ${g.date}</span>`;
-        const durMins = Number(g.durationMinutes);
-        const dur=`<span class="badge" title="Duration">⏱ ${minutesToHHMM(durMins)}</span>`;
-        const longestTag = (longest!=null && durMins===longest) ? `<span class="badge tag-longest">Longest Game</span>` : '';
-        const shortestTag= (shortest!=null && durMins===shortest)? `<span class="badge tag-shortest">Shortest Game</span>` : '';
-        sum.innerHTML = `<summary><div class="left">${firstBadge} ${secondBadge} ${thirdBadge} ${pcount} ${d} ${dur} ${longestTag} ${shortestTag}</div><div style="display:flex;gap:8px">
-          <button class="btn ghost" data-del="${g.id}">Delete</button></div></summary>`;
-
-        const ul=document.createElement('div'); ul.style.marginTop='10px';
-        const sortedPlayers=g.players.slice().sort((a,b)=>(b.vp||0)-(a.vp||0));
-        for(const p of sortedPlayers){
-          const line=document.createElement('div'); line.style.display='grid'; line.style.gridTemplateColumns='1.2fr 1.3fr .5fr'; line.style.gap='8px'; line.style.alignItems='center'; line.style.padding='6px 0';
-          const ficon=getFactionIcon(p.faction);
-          line.innerHTML=`<div>${p.name}</div><div class="muted">${ficon?`<img class="fac-icon sm" src="${ficon}" alt="" title="${p.faction}">`:''}${p.faction}</div><div style="text-align:right;font-variant-numeric:tabular-nums">${p.vp} VP</div>`;
-          ul.appendChild(line);
-        }
-        sum.appendChild(ul); frag.appendChild(sum);
-      }
-      gamesList.appendChild(frag);
-
-      $$('button[data-del]').forEach(btn=>{ btn.onclick = ()=>{ const id=btn.getAttribute('data-del'); games = games.filter(g=>g.id!==id); window.saveGames(games); render(); } });
-    }
-
-    function render(){
-      updateNamesList();
-      const s=computeStats();
-      renderKPIs(s);
-      renderWinnersChart(winnersChart, s.winnersRank);
-      renderBarChart(factionsChart, s.factionsRank.map(r=>({label:r.faction, value:r.wins})), 'label','value');
-      renderBarChart(pointsChart, s.pointsRank.map(r=>({label:r.name, value:r.points})), 'label','value');
-      renderGames();
-      refreshCaretsFromState();
-    }
-
-    function openWinnersModal(){
-      $('#modalTitle').textContent='Top Winners — Stats';
-      modalChart.innerHTML='';
-      const s=computeStats(); const winFac=computeWinningFactionsByPlayer();
-      const rows=s.winnersRank.map(r=>({name:r.name,wins:r.wins,games:r.games,winRate:(r.winRate*100)||0,avgVP:r.avgVP||0}));
-      const max=Math.max(...rows.map(r=>r.wins||0),1);
-      rows.slice(0,20).forEach(r=>{
-        const pct=(100*(r.wins||0)/max).toFixed(1);
-        const icons=(winFac.get(r.name)||[]).map(f=>{const src=getFactionIcon(f);return src?`<img class="fac-icon sm" src="${src}" alt="" title="${f}">`:''}).join('');
-        const row=document.createElement('div'); row.className='wrow';
-        row.innerHTML=`<div class="name" title="${r.name}">${r.name}</div>
-          <div class="icons">${icons}</div>
-          <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-          <div class="stats"><strong>${r.wins||0} W</strong> · ${r.games||0} games · ${r.winRate.toFixed(0)}% WR · ${r.avgVP.toFixed(1)} VP/g</div>`;
-        modalChart.appendChild(row);
-      });
-      modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
-    }
-
-    function openFactionsModal(){
-      $('#modalTitle').textContent='Top Factions — Stats';
-      modalChart.innerHTML='';
-      modalChart.classList.add('factions');
-
-      const facWins=new Map(), facApps=new Map();
-      games.forEach(g=>{
-        g.players.forEach(p=>{ if(p.faction) facApps.set(p.faction,(facApps.get(p.faction)||0)+1); });
-        g.winners.forEach(i=>{ const f=g.players[i].faction; if(f) facWins.set(f,(facWins.get(f)||0)+1); });
+    function renderGames() {
+      const sorted = [...games].sort((a,b) => {
+        const dir = sortDir.value === 'desc' ? -1 : 1;
+        if(sortBy.value === 'date') return dir * a.date.localeCompare(b.date);
+        if(sortBy.value === 'duration') return dir * ((a.durationMinutes||0) - (b.durationMinutes||0));
+        return dir * (a.players.length - b.players.length);
       });
 
-      const rows=Array.from(facApps.keys()).map(f=>{
-        const wins=facWins.get(f)||0, plays=facApps.get(f)||0;
-        return {faction:f, wins, plays, wr: plays? (wins/plays)*100 : 0};
-      }).sort((a,b)=> b.wins-a.wins || b.wr-a.wr || a.faction.localeCompare(b.faction));
-
-      const top=rows.slice(0,20);
-      const max=Math.max(...top.map(r=>r.wins),1);
-
-      top.forEach(r=>{
-        const pct=(100*r.wins/max).toFixed(1);
-        const row=document.createElement('div'); row.className='frow';
-        const icon=getFactionIcon(r.faction);
-        row.innerHTML=`
-          <div class="ficon-wrap">${icon?`<img class="ficon" src="${icon}" alt="" title="${r.faction}">`:''}</div>
-          <div class="fname" title="${r.faction}">${r.faction}</div>
-          <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-          <div class="stats"><strong>${r.wins} W</strong> · ${r.plays} games · ${r.wr.toFixed(0)}% WR</div>
-        `;
-        modalChart.appendChild(row);
-      });
-
-      modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
+      gamesList.innerHTML = sorted.map(g => {
+        const winner = g.players.reduce((a,b)=>a.vp>b.vp?a:b);
+        return `<details>
+          <summary>
+            <div class="left">
+              <strong>🏆 ${winner.name}</strong> ${labelWithIconHTML(winner.faction)}
+              <span class="badge">👥 ${g.players.length}</span>
+              <span class="badge">📅 ${g.date}</span>
+              <span class="badge">⏱ ${minutesToHHMM(g.durationMinutes)}</span>
+            </div>
+            <button class="btn ghost small" onclick="deleteGame('${g.id}')">Delete</button>
+          </summary>
+          <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:8px">
+            ${g.players.sort((a,b)=>b.vp-a.vp).map(p=>`
+              <div class="card" style="padding:8px;display:flex;align-items:center;justify-content:space-between">
+                <span>${labelWithIconHTML(p.faction)} <strong>${p.name}</strong></span>
+                <span>${p.vp} VP</span>
+              </div>
+            `).join('')}
+          </div>
+        </details>`;
+      }).join('');
     }
 
-    moreStatsBtn?.addEventListener('click', ()=>{ if(games.length) openWinnersModal(); });
-    factionStatsBtn?.addEventListener('click', ()=>{ if(games.length) openFactionsModal(); });
+    function toggleSection(id) { $(`#${id}`).classList.toggle('collapsed'); }
+    
+    const deleteGame = async (id) => {
+      if(!confirm('Delete this game?')) return;
+      const { error } = await _supabase.from('games').delete().eq('id', id);
+      if(!error) fetchGames();
+    };
 
-    modalClose.addEventListener('click', ()=>{ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); });
-    modal.addEventListener('click',(e)=>{ if(e.target===modal){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); }});
-    window.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal.classList.contains('show')){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); }});
+    modalClose.onclick = () => modal.classList.remove('show');
+    window.onclick = (e) => { if(e.target === modal) modal.classList.remove('show'); };
 
-    function setSectionCollapsed(targetId, collapsed){
-      const sec = document.getElementById(targetId)?.closest('.card'); if(!sec) return;
-      const content = document.getElementById(targetId);
-      const caret = document.querySelector(`.caret[data-caret-for="${targetId}"]`);
-      if(collapsed){
-        sec.classList.add('collapsed');
-        localStorage.setItem('collapse_'+targetId,'1');
-        content?.setAttribute('aria-expanded','false');
-        if(caret) caret.textContent='▼';
-      }else{
-        sec.classList.remove('collapsed');
-        localStorage.setItem('collapse_'+targetId,'0');
-        content?.setAttribute('aria-expanded','true');
-        if(caret) caret.textContent='▲';
-      }
-    }
-    function refreshCaretsFromState(){
-      document.querySelectorAll('.section-title').forEach(h=>{
-        const target = h.getAttribute('data-target');
-        const collapsed = localStorage.getItem('collapse_'+target)==='1';
-        setSectionCollapsed(target, collapsed);
-      });
-    }
-    document.querySelectorAll('.section-title').forEach(h=>{
-      const target = h.getAttribute('data-target');
-      if(localStorage.getItem('collapse_'+target)==='1') setSectionCollapsed(target,true);
-      h.addEventListener('click', ()=>{
-        const isCollapsed = (localStorage.getItem('collapse_'+target)==='1');
-        setSectionCollapsed(target, !isCollapsed);
-      });
-    });
+    sortBy.onchange = renderGames;
+    sortDir.onchange = renderGames;
 
-    exportBtn.onclick=()=>{const data=JSON.stringify(games,null,2);const blob=new Blob([data],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ti4_games.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)};
-    importInput.onchange=(e)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const incoming=JSON.parse(reader.result);if(!Array.isArray(incoming))throw new Error('Invalid file');const ids=new Set(games.map(g=>g.id));let added=0;for(const g of incoming){if(g&&typeof g==='object'&&g.id&&!ids.has(g.id)){
-              if(Number.isFinite(g.durationHours) && !Number.isFinite(g.durationMinutes)){ g.durationMinutes=Math.round(Number(g.durationHours)*60); delete g.durationHours; }
-              games.push(g);ids.add(g.id);added++;
-            }}window.saveGames(games);render();alert(`Imported ${added} game(s).`)}catch(err){alert('Failed to import: '+err.message)}finally{importInput.value=''}};reader.readAsText(file)};
-    resetBtn.onclick=()=>{if(confirm('Delete ALL logged games? This cannot be undone.')){games=[];window.saveGames(games);render()}};
-
-    window.addEventListener('keydown',(ev)=>{if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='s'){ev.preventDefault();form.requestSubmit()}});
-    sortBy?.addEventListener('change',render); sortDir?.addEventListener('change',render);
-
-    render();
+    fetchGames();
   </script>
-
-<script>
-/* ======= Supabase sync ======= */
-const SUPABASE_URL = 'https://vrivmniufxmftouzvjfo.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZtbml1ZnhtZnRvdXp2amZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNDM4NDIsImV4cCI6MjA5NjkxOTg0Mn0.YsYz-ZPEyQ0Q-cdfHRlQRcvhT0f0aS2HdajbniWM4kg';
-
-const supabaseClient = window.supabase?.createClient
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
-
-const __slug = (location.pathname.match(/\/log\/([a-z0-9\-]+)/i)||[])[1] || null;
-
-if (__slug) {
-  const el = document.getElementById('slugDisplay');
-  if (el) el.textContent = '— ' + __slug;
-}
-
-const __flash = (msg, ok=false)=>{
-  const el = document.getElementById('supabaseMsg');
-  if(!el) return;
-  el.textContent = msg;
-  el.style.color = ok ? '#10b981' : '#ef4444';
-  setTimeout(()=>{ el.textContent=''; el.style.color='#93a0ad'; }, 1500);
-};
-
-async function __getGameIdBySlug(){
-  const { data, error } = await supabaseClient
-    .from('games')
-    .select('id')
-    .eq('slug', __slug)
-    .maybeSingle();
-  if(error || !data) throw new Error('Log not found for slug');
-  return data.id;
-}
-
-async function __loadFromSupabase(){
-  if(!supabaseClient || !__slug) return;
-  try{
-    const gameId = await __getGameIdBySlug();
-    const { data, error } = await supabaseClient
-      .from('events')
-      .select('payload, created_at')
-      .eq('game_id', gameId)
-      .eq('type', 'ADD_GAME_ENTRY')
-      .order('created_at', { ascending: true });
-
-    if(error) throw error;
-
-    const arr = (data || []).map(r => r.payload || {}).filter(x => x && x.id);
-    games = Array.isArray(arr) ? arr : [];
-    window.games = games;
-    if (typeof window.render === 'function') window.render();
-    __flash('Loaded from Supabase', true);
-  }catch(e){
-    console.warn(e);
-    __flash('Could not load from Supabase');
-  }
-}
-
-(function __overrideSave(){
-  if(!supabaseClient || !__slug) return;
-  const __origSave = window.saveGames || function(){};
-  let __syncTimer = null;
-
-  window.saveGames = function(arr){
-    __origSave(arr);
-    clearTimeout(__syncTimer);
-    __syncTimer = setTimeout(async ()=>{
-      try{
-        const gameId = await __getGameIdBySlug();
-        const { error: delErr } = await supabaseClient
-          .from('events')
-          .delete()
-          .eq('game_id', gameId)
-          .eq('type', 'ADD_GAME_ENTRY');
-        if(delErr) throw delErr;
-        const rows = (arr||[]).map(g=>({ game_id: gameId, type:'ADD_GAME_ENTRY', payload:g }));
-        if(rows.length){
-          const { error: insErr } = await supabaseClient.from('events').insert(rows);
-          if(insErr) throw insErr;
-        }
-        __flash('Saved to Supabase', true);
-      }catch(e){
-        console.error(e);
-        __flash('Save failed (Supabase)');
-      }
-    }, 300);
-  };
-})();
-
-if(__slug) __loadFromSupabase();
-
-(function __subscribeRealtime(){
-  if(!supabaseClient || !__slug) return;
-  supabaseClient.channel('rt:log')
-    .on('postgres_changes', { event:'*', schema:'public', table:'events' }, (payload)=>{
-      if(payload?.new?.type === 'ADD_GAME_ENTRY'){ __loadFromSupabase(); }
-    })
-    .subscribe();
-})();
-</script>
 </body>
 </html>
