@@ -58,8 +58,11 @@
     @keyframes flashRed{0%{box-shadow:0 0 0 0 rgba(239,68,68,0)}30%{box-shadow:0 0 0 4px rgba(239,68,68,.35)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 
     /* players list */
-    .player-row{display:grid;grid-template-columns:1.2fr 1.4fr .6fr auto;gap:8px;align-items:center}
+    .player-row{display:grid;grid-template-columns:1.6fr 1.8fr .6fr;gap:8px;align-items:center}
     .player-row + .player-row{margin-top:8px}
+    .player-count-btns{display:flex;gap:6px;flex-wrap:wrap}
+    .player-count-btns .btn{padding:6px 10px;font-size:.82rem;min-width:42px;justify-content:center}
+    .player-count-btns .btn.active{border-color:#3b82f6;background:linear-gradient(90deg,rgba(96,165,250,.25),rgba(96,165,250,.12))}
 
     /* stats grid */
     .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 10px}
@@ -197,9 +200,16 @@
               <label for="gameDurationTime">Duration (HH:MM)</label>
               <input id="gameDurationTime" type="time" step="60" required />
             </div>
-            <div style="grid-column: span 6;display:flex;gap:8px;align-items:flex-end;justify-content:flex-end">
-              <button class="btn ghost" type="button" id="prefill6">+ 6 Players</button>
-              <button class="btn ghost" type="button" id="addPlayer">+ Player</button>
+            <div style="grid-column: span 6;display:flex;flex-direction:column;gap:4px;align-items:flex-end;justify-content:flex-end">
+              <label style="font-size:.78rem;color:var(--muted)">Players</label>
+              <div class="player-count-btns" id="playerCountBtns">
+                <button class="btn ghost active" type="button" data-count="3">3</button>
+                <button class="btn ghost" type="button" data-count="4">4</button>
+                <button class="btn ghost" type="button" data-count="5">5</button>
+                <button class="btn ghost" type="button" data-count="6">6</button>
+                <button class="btn ghost" type="button" data-count="7">7</button>
+                <button class="btn ghost" type="button" data-count="8">8</button>
+              </div>
             </div>
           </div>
 
@@ -348,7 +358,7 @@ Sorry. = )
     const flashRed=(el)=>{el.classList.add('glow-red');setTimeout(()=>el.classList.remove('glow-red'),650)};
 
     const gameDate=$('#gameDate'); const gameDurationTime=$('#gameDurationTime'); const playersWrap=$('#players');
-    const addPlayerBtn=$('#addPlayer'); const prefill6Btn=$('#prefill6'); const form=$('#gameForm');
+    const form=$('#gameForm');
     const gamesList=$('#gamesList'); const sortBy=$('#sortBy'); const sortDir=$('#sortDir');
 
     const winnersChart=$('#winnersChart'); const factionsChart=$('#factionsChart'); const pointsChart=$('#pointsChart'); const statsGrid=$('#statsGrid');
@@ -372,22 +382,32 @@ Sorry. = )
     function getAllPlayerNames(){const set=new Set();games.forEach(g=>g.players.forEach(p=>{if(p.name?.trim())set.add(p.name.trim())}));return Array.from(set).sort((a,b)=>a.localeCompare(b))}
     function createFactionSelect(){const sel=document.createElement('select');sel.required=true;sel.className='faction-select';sel.innerHTML='<option value="" disabled selected>Select faction</option>'+ALL_FACTIONS.map(f=>`<option value="${f}">${f}</option>`).join('');applyFactionIconToSelect(sel);return sel}
     function createVPSelect(prefVP){const sel=document.createElement('select');sel.setAttribute('data-vp','1');sel.required=true;sel.innerHTML=Array.from({length:15},(_,i)=>`<option value="${i}" ${prefVP==i?'selected':''}>${i} VP</option>`).join('');return sel}
-    function createPlayerRow(pref={}){const row=document.createElement('div');row.className='player-row';
-      const name=document.createElement('input');name.type='text';name.placeholder='Player name';name.required=true;if(pref.name)name.value=pref.name;
+    function createPlayerRow(pref={}, index=0){
+      const row=document.createElement('div');row.className='player-row';
+      const name=document.createElement('input');name.type='text';
+      name.placeholder='Add Player '+(index+1)+' Name...';
+      name.required=true;if(pref.name)name.value=pref.name;
       const listId='namesList';if(!document.getElementById(listId)){const dl=document.createElement('datalist');dl.id=listId;document.body.appendChild(dl)}name.setAttribute('list',listId);
       const faction=createFactionSelect();if(pref.faction)faction.value=pref.faction;applyFactionIconToSelect(faction);faction.addEventListener('change',()=>{updateFactionOptions();applyFactionIconToSelect(faction)});
       const vp=createVPSelect(pref.vp??0);
-      const del=document.createElement('button');del.type='button';del.className='btn ghost';del.textContent='Remove';
-      del.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count<=MIN_PLAYERS){flashRed(del);return}row.remove();updateNamesList();updateFactionOptions()};
-      row.append(name,faction,vp,del);playersWrap.appendChild(row);updateFactionOptions();
+      row.append(name,faction,vp);playersWrap.appendChild(row);updateFactionOptions();
     }
     function updateNamesList(){const dl=document.getElementById('namesList');if(!dl)return;const names=new Set([...getAllPlayerNames(),...$$('.player-row input[type=text]',playersWrap).map(i=>i.value.trim()).filter(Boolean)]);dl.innerHTML=Array.from(names).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}"></option>`).join('')}
     function getSelectedFactions(){return $$('.player-row select',playersWrap).filter(s=>!s.hasAttribute('data-vp')).map(s=>s.value).filter(v=>v&&v!=='')}
     function updateFactionOptions(){const chosen=new Set(getSelectedFactions());$$('.player-row select',playersWrap).forEach(sel=>{if(sel.hasAttribute('data-vp'))return;$$('option',sel).forEach(opt=>{if(!opt.value)return;opt.disabled=chosen.has(opt.value)&&sel.value!==opt.value})})}
-    function ensureMinPlayers(min=MIN_PLAYERS){while($$('.player-row',playersWrap).length<min){createPlayerRow()}} ensureMinPlayers(MIN_PLAYERS);
-    addPlayerBtn.onclick=()=>{const count=$$('.player-row',playersWrap).length;if(count>=MAX_PLAYERS){flashRed(addPlayerBtn);return}createPlayerRow();updateNamesList()};
-    prefill6Btn.onclick=()=>{playersWrap.innerHTML='';for(let i=0;i<6;i++)createPlayerRow();updateNamesList();updateFactionOptions()};
-    clearFormBtn.onclick=()=>{playersWrap.innerHTML='';ensureMinPlayers(MIN_PLAYERS);updateNamesList();$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');$$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
+    function setPlayerCount(n){
+      playersWrap.innerHTML='';
+      for(let i=0;i<n;i++) createPlayerRow({},i);
+      updateNamesList();updateFactionOptions();
+      $$('#playerCountBtns .btn').forEach(b=>{
+        b.classList.toggle('active', Number(b.getAttribute('data-count'))===n);
+      });
+    }
+    function ensureMinPlayers(min=MIN_PLAYERS){while($$('.player-row',playersWrap).length<min){const idx=$$('.player-row',playersWrap).length;createPlayerRow({},idx)}} ensureMinPlayers(MIN_PLAYERS);
+    $$('#playerCountBtns .btn').forEach(btn=>{
+      btn.addEventListener('click',()=>setPlayerCount(Number(btn.getAttribute('data-count'))));
+    });
+    clearFormBtn.onclick=()=>{setPlayerCount(MIN_PLAYERS);$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');$$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
 
     function validateUniqueFactions(players){const s=players.map(p=>p.faction).filter(Boolean);return new Set(s).size===s.length}
     function computePodiums(players){const scores=Array.from(new Set(players.map(p=>p.vp))).sort((a,b)=>b-a);const group=(score)=>players.map((p,i)=>p.vp===score?i:-1).filter(i=>i!==-1);return{scores,first:scores[0]!==undefined?group(scores[0]):[],second:scores[1]!==undefined?group(scores[1]):[],third:scores[2]!==undefined?group(scores[2]):[]}}
