@@ -127,6 +127,8 @@
     .sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
     .section-title{cursor:pointer;display:flex;align-items:center;gap:8px}
     .caret{font-size:.95rem;color:var(--muted);width:1em;text-align:center}
+    .collapsed .sec-content { display: none; }
+    .collapsed .caret { transform: rotate(-90deg); }
 
     /* charts */
     .barchart{display:flex;flex-direction:column;gap:8px}
@@ -286,7 +288,7 @@
     const FACTION_ICON_MAP={"Nekro Virus":"Nekro.png","Sardakk N'orr":"Sardakk.png","Naalu Collective":"Naalu.png","Arborec":"Arborec.png","Winnu":"Winnu.png","Universities of Jol-Nar":"Jol Nar.png","Xxcha Kingdom":"Xxcha.png","Yin Brotherhood":"Yin.png","Yssaril Tribes":"Yssaril.png","Barony of Letnev":"Letnev.png","Clan of Saar":"Saar.png","Embers of Muaat":"Muaat.png","Emirates of Hacan":"Hacan.png","Federation of Sol":"Sol.png","Ghosts of Creuss":"Creuss.png","L1Z1X Mindnet":"L1Z1X.png","Mentak Coalition":"Mentak.png","Argent Flight":"Argent.png","Empyrean":"Empyrean.png","Mahact Gene-Sorcerers":"Mahact.png","Naaz-Rokha Alliance":"Naaz-Rokha.png","Nomad":"Nomad.png","Titans of Ul":"Titans.png","Vuil'Raith Cabal":"Vuil'Raith.png","Council Keleres":"Keleres.png"};
 
     const SUPABASE_URL = 'https://vrivmniufxmftouzvjfo.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZtbmkxdWZ4bWZ0b3V6dmpmbyIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzgxMTU4NDE4LCJleHAiOjIwOTY3MzQ0MTh9.Z0Z5V_L6W_8q6N_Z6W_8q6N_Z6W_8q6N_Z6W_8q6N_Z';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZtbml1ZnhtZnRvdXp2amZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNDM4NDIsImV4cCI6MjA5NjkxOTg0Mn0.YsYz-ZPEyQ0Q-cdfHRlQRcvhT0f0aS2HdajbniWM4kg';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let games = [];
@@ -396,10 +398,10 @@
 
     function updateFactionOptions(){ $$('.custom-select-wrapper').forEach(w => { if(w.renderOptions) w.renderOptions(); }); }
 
-    setPlayerCount(6);
+    setPlayerCount(3);
     
     clearFormBtn.onclick=()=>{
-      const currentCount = parseInt($$('#playerCountSelect button.active')[0]?.dataset.count || 6);
+      const currentCount = parseInt($$('#playerCountSelect button.active')[0]?.dataset.count || 3);
       setPlayerCount(currentCount);
       gameDate.valueAsDate=new Date();
       gameDurationTime.value='06:00';
@@ -421,7 +423,6 @@
       clearFormBtn.click();
     };
 
-    // Custom Delete Logic
     const deleteModal = $('#deleteModal');
     const deleteConfirmInput = $('#deleteConfirmInput');
     const confirmDeleteBtn = $('#confirmDeleteBtn');
@@ -533,7 +534,7 @@
       }).join('');
     }
 
-    function toggleSection(id) { $(`#${id}`).classList.toggle('collapsed'); }
+    function toggleSection(id) { document.getElementById(id).classList.toggle('collapsed'); }
     
     const deleteGame = async (id) => {
       if(!confirm('Delete this game?')) return;
@@ -541,6 +542,46 @@
       if(!error) fetchGames();
     };
 
+    function showDetailedStats(type) {
+      modal.classList.add('show');
+      const title = type === 'winners' ? 'All Winners' : 'All Factions';
+      document.getElementById('modalTitle').textContent = title;
+      
+      let data = [];
+      if(type === 'winners') {
+        const playerWins = {};
+        games.forEach(g => {
+          const winnerScore = Math.max(...g.players.map(p => p.vp));
+          g.players.forEach(p => {
+            if(p.vp === winnerScore && winnerScore > 0) {
+              if(!playerWins[p.name]) playerWins[p.name] = { count: 0, factions: [] };
+              playerWins[p.name].count++;
+              playerWins[p.name].factions.push(p.faction);
+            }
+          });
+        });
+        data = Object.entries(playerWins).sort((a,b)=>b[1].count-a[1].count);
+      } else {
+        const factionPlays = {};
+        games.forEach(g => g.players.forEach(p => {
+          factionPlays[p.faction] = (factionPlays[p.faction] || 0) + 1;
+        }));
+        data = Object.entries(factionPlays).sort((a,b)=>b[1]-a[1]);
+      }
+
+      modalChart.innerHTML = `<div class="barchart">${data.map(([name, val]) => {
+        const count = type === 'winners' ? val.count : val;
+        const icons = type === 'winners' ? val.factions.map(f => `<img src="${getFactionIcon(f)}" class="fac-icon sm">`).join('') : '';
+        return `<div class="bar">
+          <div class="label">${type === 'factions' ? labelWithIconHTML(name) : name}${icons}</div>
+          <div class="track"><div class="fill" style="width:${(count/data[0][1].count || data[0][1])*100}%"></div></div>
+          <div class="value">${count}</div>
+        </div>`;
+      }).join('')}</div>`;
+    }
+
+    $('#moreStatsBtn').onclick = () => showDetailedStats('winners');
+    $('#factionStatsBtn').onclick = () => showDetailedStats('factions');
     modalClose.onclick = () => modal.classList.remove('show');
     window.onclick = (e) => { if(e.target === modal) modal.classList.remove('show'); if(e.target === deleteModal) deleteModal.classList.remove('show'); };
     sortBy.onchange = renderGames;
