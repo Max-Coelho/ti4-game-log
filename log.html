@@ -47,13 +47,21 @@
       background: #0b121a !important;
       color: white !important;
     }
-    /* Forçar ícones brancos em navegadores Webkit (Chrome/Edge/Safari) */
-    input::-webkit-calendar-picker-indicator {
+    #gameDate::-webkit-calendar-picker-indicator {
       filter: invert(1) brightness(10) !important;
-      -webkit-filter: invert(1) brightness(10) !important;
-      cursor: pointer !important;
-      opacity: 1 !important;
       background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>') !important;
+      cursor: pointer !important; opacity: 1 !important;
+    }
+    #gameDurationTime::-webkit-calendar-picker-indicator {
+      filter: invert(1) brightness(10) !important;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>') !important;
+      cursor: pointer !important; opacity: 1 !important;
+    }
+    input[type="date"]::-webkit-inner-spin-button,
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-inner-spin-button,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1) brightness(10) !important;
     }
     input:focus, select:focus, textarea:focus{border-color:#334155;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
     .btn{cursor:pointer;transition:.15s ease;display:inline-flex;gap:8px;align-items:center;position:relative}
@@ -106,7 +114,26 @@
       content: '▼';
       font-size: 0.7rem;
       margin-left: auto;
-      color: var(--muted);
+      color: var(--danger);
+      transition: all 0.3s ease;
+    }
+    .custom-select.filled:after {
+      content: '✓';
+      color: var(--ok);
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    select, input[type="text"] {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23ef4444'><path d='M0 0l5 5 5-5z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px !important;
+      transition: all 0.3s ease;
+    }
+    select.filled, input[type="text"].filled {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2310b981'><path d='M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z'/></svg>");
     }
     .custom-options {
       position: absolute;
@@ -489,6 +516,7 @@
 
       function selectOption(val, label) {
         hiddenInput.value = val;
+        if(val) select.classList.add('filled'); else select.classList.remove('filled');
         const icon = getFactionIcon(val);
         select.innerHTML = `${icon ? `<img src="${icon}" class="fac-icon">` : ''} <span>${label}</span>`;
         options.classList.remove('show');
@@ -519,10 +547,17 @@
       return wrapper;
     }
 
-    function createVPSelect(prefVP){const sel=document.createElement('select');sel.setAttribute('data-vp','1');sel.required=true;sel.innerHTML=Array.from({length:15},(_,i)=>`<option value="${i}" ${prefVP==i?'selected':''}>${i} VP</option>`).join('');return sel}
+    function createVPSelect(prefVP){
+      const sel=document.createElement('select');sel.setAttribute('data-vp','1');sel.required=true;
+      sel.innerHTML=Array.from({length:15},(_,i)=>`<option value="${i}" ${prefVP==i?'selected':''}>${i} VP</option>`).join('');
+      if(prefVP > 0) sel.classList.add('filled');
+      sel.onchange=()=>{if(sel.value!=='0')sel.classList.add('filled');else sel.classList.remove('filled');};
+      return sel;
+    }
     
     function createPlayerRow(pref={}){const row=document.createElement('div');row.className='player-row';
-      const name=document.createElement('input');name.type='text';name.placeholder='Player name';name.required=true;if(pref.name)name.value=pref.name;
+      const name=document.createElement('input');name.type='text';name.placeholder='Player name';name.required=true;if(pref.name){name.value=pref.name;name.classList.add('filled');}
+      name.oninput=()=>{if(name.value.trim())name.classList.add('filled');else name.classList.remove('filled');};
       const listId='namesList';if(!document.getElementById(listId)){const dl=document.createElement('datalist');dl.id=listId;document.body.appendChild(dl)}name.setAttribute('list',listId);
       
       const faction=createFactionSelect();
