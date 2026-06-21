@@ -123,7 +123,7 @@
 
     .sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
     .section-title{cursor:pointer;display:flex;align-items:center;gap:8px}
-    .caret{font-size:.95rem;color:var(--muted);width:1em;text-align:center}
+    .caret{font-size:.95rem;color:var(--muted);width:1em;text-align:center;transition:transform 0.2s}
     .collapsed .sec-content { display: none; }
     .collapsed .caret { transform: rotate(-90deg); }
 
@@ -299,8 +299,8 @@
       else { games = data || []; renderAll(); }
     }
 
-    async function saveToSupabase() {
-      const { error } = await _supabase.from('games').upsert(games.map(g => ({ ...g, slug })));
+    async function saveToSupabase(newGame) {
+      const { error } = await _supabase.from('games').insert([{ ...newGame, slug }]);
       if (error) console.error('Error saving games:', error);
     }
 
@@ -414,8 +414,8 @@
         vp: parseInt($('select', row).value)
       }));
       const newGame = { id: crypto.randomUUID(), date: gameDate.value, durationMinutes: HHMMtoMinutes(gameDurationTime.value), players, slug };
+      await saveToSupabase(newGame);
       games.push(newGame);
-      await saveToSupabase();
       renderAll();
       clearFormBtn.click();
     };
@@ -536,7 +536,7 @@
     const deleteGame = async (id) => {
       if(!confirm('Delete this game?')) return;
       const { error } = await _supabase.from('games').delete().eq('id', id);
-      if(!error) fetchGames();
+      if(!error) { games = games.filter(g => g.id !== id); renderAll(); }
     };
 
     function showDetailedStats(type) {
@@ -569,9 +569,10 @@
       modalChart.innerHTML = `<div class="barchart">${data.map(([name, val]) => {
         const count = type === 'winners' ? val.count : val;
         const icons = type === 'winners' ? val.factions.map(f => `<img src="${getFactionIcon(f)}" class="fac-icon sm">`).join('') : '';
+        const maxVal = data[0][1].count || data[0][1];
         return `<div class="bar">
           <div class="label">${type === 'factions' ? labelWithIconHTML(name) : name}${icons}</div>
-          <div class="track"><div class="fill" style="width:${(count/data[0][1].count || data[0][1])*100}%"></div></div>
+          <div class="track"><div class="fill" style="width:${(count/maxVal)*100}%"></div></div>
           <div class="value">${count}</div>
         </div>`;
       }).join('')}</div>`;
