@@ -103,6 +103,44 @@
     select.faction-select{background-repeat:no-repeat;background-position:8px center;background-size:18px 18px;padding-left:36px}
     select.faction-select:focus{background-color:#0b121a}
 
+    /* Custom faction dropdown */
+    .faction-dd{position:relative;user-select:none}
+    .faction-dd .dd-trigger{
+      display:flex;align-items:center;gap:8px;width:100%;
+      background:#0b121a;color:var(--text);border:1px solid var(--border);
+      border-radius:12px;padding:10px 12px;font-size:.95rem;cursor:pointer;
+      transition:.15s ease;
+    }
+    .faction-dd .dd-trigger:hover{border-color:#334155}
+    .faction-dd .dd-trigger.open{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
+    .faction-dd .dd-trigger.empty{border-color:var(--danger)}
+    .faction-dd .dd-trigger.filled{border-color:var(--ok)}
+    .faction-dd .dd-trigger .dd-icon{width:18px;height:18px;object-fit:contain;flex:none}
+    .faction-dd .dd-trigger .dd-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+    .faction-dd .dd-trigger .dd-label.selected{color:var(--text)}
+    .faction-dd .dd-trigger .dd-arrow{flex:none;font-size:.7rem;color:var(--danger);transition:.2s}
+    .faction-dd .dd-trigger.filled .dd-arrow{color:var(--ok)}
+    .faction-dd .dd-trigger.open .dd-arrow{transform:rotate(180deg)}
+    .faction-dd .dd-list{
+      position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:100;
+      background:#0f1720;border:1px solid #334155;border-radius:12px;
+      max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5);
+      display:none;
+    }
+    .faction-dd .dd-list.open{display:block}
+    .faction-dd .dd-list::-webkit-scrollbar{width:4px}
+    .faction-dd .dd-list::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}
+    .faction-dd .dd-item{
+      display:flex;align-items:center;gap:8px;
+      padding:8px 12px;cursor:pointer;font-size:.9rem;
+      transition:.1s ease;
+    }
+    .faction-dd .dd-item:hover{background:rgba(96,165,250,.12)}
+    .faction-dd .dd-item.selected{background:rgba(96,165,250,.18);color:var(--accent)}
+    .faction-dd .dd-item.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+    .faction-dd .dd-item img{width:18px;height:18px;object-fit:contain;flex:none}
+    .faction-dd .dd-item .dd-item-name{flex:1}
+
     .win-icons{display:inline-flex;align-items:center;gap:6px;margin-left:8px}
     #winnersChart.winners .label{flex:0 0 auto;max-width:none}
     #winnersChart.winners .track{min-width:100px}
@@ -380,7 +418,64 @@ Sorry. = )
     gameDurationTime.value = '06:00';
 
     function getAllPlayerNames(){const set=new Set();games.forEach(g=>g.players.forEach(p=>{if(p.name?.trim())set.add(p.name.trim())}));return Array.from(set).sort((a,b)=>a.localeCompare(b))}
-    function createFactionSelect(){const sel=document.createElement('select');sel.required=true;sel.className='faction-select';sel.innerHTML='<option value="" disabled selected>Select faction</option>'+ALL_FACTIONS.map(f=>`<option value="${f}">${f}</option>`).join('');applyFactionIconToSelect(sel);return sel}
+    function createFactionDD(onChange){
+      const wrap=document.createElement('div');
+      wrap.className='faction-dd';
+      // hidden input to store value (used by form submit logic)
+      const hidden=document.createElement('input');
+      hidden.type='hidden';hidden.setAttribute('data-faction-val','1');
+      // trigger button
+      const trigger=document.createElement('div');
+      trigger.className='dd-trigger empty';
+      trigger.setAttribute('tabindex','0');
+      trigger.innerHTML=`<img class="dd-icon" src="" alt="" style="display:none"><span class="dd-label">Select faction</span><span class="dd-arrow">▼</span>`;
+      // list
+      const list=document.createElement('div');
+      list.className='dd-list';
+      ALL_FACTIONS.forEach(f=>{
+        const item=document.createElement('div');
+        item.className='dd-item';
+        item.setAttribute('data-value',f);
+        const icon=getFactionIcon(f);
+        item.innerHTML=`${icon?`<img src="${icon}" alt="" title="${f}">`:'<span style="width:18px"></span>'}<span class="dd-item-name">${f}</span>`;
+        item.addEventListener('click',(e)=>{
+          e.stopPropagation();
+          if(item.classList.contains('disabled')) return;
+          selectFaction(f);
+          closeList();
+          if(onChange) onChange(f);
+        });
+        list.appendChild(item);
+      });
+      wrap.append(hidden,trigger,list);
+      function selectFaction(val){
+        hidden.value=val;
+        const icon=getFactionIcon(val);
+        const iconEl=trigger.querySelector('.dd-icon');
+        const labelEl=trigger.querySelector('.dd-label');
+        if(icon){iconEl.src=icon;iconEl.style.display='';} else {iconEl.style.display='none';}
+        labelEl.textContent=val||'Select faction';
+        labelEl.classList.toggle('selected',!!val);
+        trigger.classList.toggle('empty',!val);
+        trigger.classList.toggle('filled',!!val);
+        $$('.dd-item',list).forEach(it=>it.classList.toggle('selected',it.getAttribute('data-value')===val));
+      }
+      function openList(){trigger.classList.add('open');list.classList.add('open');}
+      function closeList(){trigger.classList.remove('open');list.classList.remove('open');}
+      trigger.addEventListener('click',()=>{ if(list.classList.contains('open')) closeList(); else openList(); });
+      trigger.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();if(list.classList.contains('open'))closeList();else openList();} if(e.key==='Escape')closeList(); });
+      document.addEventListener('click',(e)=>{ if(!wrap.contains(e.target)) closeList(); },{capture:false});
+      // expose API
+      wrap._getValue=()=>hidden.value;
+      wrap._setValue=(val)=>selectFaction(val);
+      wrap._updateDisabled=(chosen)=>{
+        $$('.dd-item',list).forEach(it=>{
+          const v=it.getAttribute('data-value');
+          it.classList.toggle('disabled', chosen.has(v) && hidden.value!==v);
+        });
+      };
+      return wrap;
+    }
     function createVPSelect(prefVP){const sel=document.createElement('select');sel.setAttribute('data-vp','1');sel.required=true;sel.innerHTML=Array.from({length:15},(_,i)=>`<option value="${i}" ${prefVP==i?'selected':''}>${i} VP</option>`).join('');return sel}
     function createPlayerRow(pref={}, index=0){
       const row=document.createElement('div');row.className='player-row';
@@ -388,13 +483,14 @@ Sorry. = )
       name.placeholder='Add Player '+(index+1)+' Name...';
       name.required=true;if(pref.name)name.value=pref.name;
       const listId='namesList';if(!document.getElementById(listId)){const dl=document.createElement('datalist');dl.id=listId;document.body.appendChild(dl)}name.setAttribute('list',listId);
-      const faction=createFactionSelect();if(pref.faction)faction.value=pref.faction;applyFactionIconToSelect(faction);faction.addEventListener('change',()=>{updateFactionOptions();applyFactionIconToSelect(faction)});
+      const factionDD=createFactionDD(()=>updateFactionOptions());
+      if(pref.faction) factionDD._setValue(pref.faction);
       const vp=createVPSelect(pref.vp??0);
-      row.append(name,faction,vp);playersWrap.appendChild(row);updateFactionOptions();
+      row.append(name,factionDD,vp);playersWrap.appendChild(row);updateFactionOptions();
     }
     function updateNamesList(){const dl=document.getElementById('namesList');if(!dl)return;const names=new Set([...getAllPlayerNames(),...$$('.player-row input[type=text]',playersWrap).map(i=>i.value.trim()).filter(Boolean)]);dl.innerHTML=Array.from(names).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}"></option>`).join('')}
-    function getSelectedFactions(){return $$('.player-row select',playersWrap).filter(s=>!s.hasAttribute('data-vp')).map(s=>s.value).filter(v=>v&&v!=='')}
-    function updateFactionOptions(){const chosen=new Set(getSelectedFactions());$$('.player-row select',playersWrap).forEach(sel=>{if(sel.hasAttribute('data-vp'))return;$$('option',sel).forEach(opt=>{if(!opt.value)return;opt.disabled=chosen.has(opt.value)&&sel.value!==opt.value})})}
+    function getSelectedFactions(){return $$('.player-row .faction-dd',playersWrap).map(dd=>dd._getValue()).filter(v=>v&&v!=='')}
+    function updateFactionOptions(){const chosen=new Set(getSelectedFactions());$$('.player-row .faction-dd',playersWrap).forEach(dd=>dd._updateDisabled(chosen))}
     function setPlayerCount(n){
       playersWrap.innerHTML='';
       for(let i=0;i<n;i++) createPlayerRow({},i);
@@ -407,7 +503,7 @@ Sorry. = )
     $$('#playerCountBtns .btn').forEach(btn=>{
       btn.addEventListener('click',()=>setPlayerCount(Number(btn.getAttribute('data-count'))));
     });
-    clearFormBtn.onclick=()=>{setPlayerCount(MIN_PLAYERS);$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');$$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
+    clearFormBtn.onclick=()=>{setPlayerCount(MIN_PLAYERS);$$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');gameDate.valueAsDate=new Date();gameDurationTime.value='06:00';updateFactionOptions()};
 
     function validateUniqueFactions(players){const s=players.map(p=>p.faction).filter(Boolean);return new Set(s).size===s.length}
     function computePodiums(players){const scores=Array.from(new Set(players.map(p=>p.vp))).sort((a,b)=>b-a);const group=(score)=>players.map((p,i)=>p.vp===score?i:-1).filter(i=>i!==-1);return{scores,first:scores[0]!==undefined?group(scores[0]):[],second:scores[1]!==undefined?group(scores[1]):[],third:scores[2]!==undefined?group(scores[2]):[]}}
@@ -451,8 +547,10 @@ Sorry. = )
       if(!Number.isFinite(durMinutes) || durMinutes<=0){ alert('Enter a valid duration (HH:MM).'); return; }
       const rows=$$('.player-row',playersWrap);
       const players=rows.map(r=>{
-        const [nameEl,factionEl,vpEl]=[$('input[type=text]',r),$('select:not([data-vp])',r),$('select[data-vp]',r)];
-        return {name:(nameEl.value||'').trim(),faction:factionEl.value,vp:Number(vpEl.value||0)};
+        const nameEl=$('input[type=text]',r);
+        const factionDD=$('.faction-dd',r);
+        const vpEl=$('select[data-vp]',r);
+        return {name:(nameEl?.value||'').trim(),faction:factionDD?factionDD._getValue():'',vp:Number(vpEl?.value||0)};
       }).filter(p=>p.name&&p.faction);
 
       if(players.length<MIN_PLAYERS){alert(`Add at least ${MIN_PLAYERS} players.`);return}
@@ -465,7 +563,7 @@ Sorry. = )
 
       render();
       $$('.player-row select[data-vp]',playersWrap).forEach(s=>s.value='0');
-      $$('.player-row select:not([data-vp])',playersWrap).forEach(s=>s.value='');
+      $$('.player-row .faction-dd',playersWrap).forEach(dd=>dd._setValue(''));
       updateNamesList(); updateFactionOptions();
     });
 
