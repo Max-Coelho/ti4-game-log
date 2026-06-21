@@ -216,11 +216,12 @@
   </div>
 </div>
       <div class="tools">
-        <button class="btn primary" id="exportBtn" title="Export your data as JSON">Export JSON</button>
-        <label class="btn ghost" for="importInput" title="Import a previously exported JSON">
+        <button class="btn primary" id="exportBtn" title="Export your data as JSON" style="display:none">Export JSON</button>
+        <label class="btn ghost" for="importInput" title="Import a previously exported JSON" style="display:none">
           Import JSON <input id="importInput" type="file" accept="application/json" style="display:none" />
         </label>
-        <button class="btn danger" id="resetBtn" title="Erase all data">Reset</button>
+        <button class="btn danger" id="resetBtn" title="Erase all data" style="display:none">Reset</button>
+        <button class="btn danger" id="deleteLogBtn" title="Delete this entire log">Delete Log</button>
       </div>
     </header>
 
@@ -336,6 +337,26 @@ Sorry. = )
     </div>
   </div>
 
+  <!-- Delete Log Modal -->
+  <div id="deleteLogModal" aria-hidden="true" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay);z-index:60">
+    <div class="dialog" role="dialog" aria-modal="true" style="max-width:420px">
+      <header>
+        <strong>Delete Log</strong>
+        <button class="close" id="deleteLogModalClose" aria-label="Close">✕</button>
+      </header>
+      <div class="content" style="padding:20px">
+        <p style="margin:0 0 8px;color:var(--text)">This will <strong style="color:var(--danger)">permanently delete</strong> all games in this log from the database.</p>
+        <p style="margin:0 0 16px;color:var(--muted);font-size:.9rem">To confirm, type the log slug below:</p>
+        <input id="deleteLogConfirmInput" type="text" placeholder="Type slug to confirm..." style="width:100%;margin-bottom:16px" />
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn ghost" id="deleteLogCancelBtn">Cancel</button>
+          <button class="btn danger" id="deleteLogConfirmBtn" disabled>Delete Forever</button>
+        </div>
+        <p id="deleteLogMsg" style="margin:10px 0 0;font-size:.85rem;color:var(--danger);min-height:1.2em"></p>
+      </div>
+    </div>
+  </div>
+
   <script>
     const MIN_PLAYERS=3, MAX_PLAYERS=8;
 
@@ -405,6 +426,13 @@ Sorry. = )
 
     const modal=$('#modal'); const modalClose=$('#modalClose'); const modalChart=$('#modalChart');
     const moreStatsBtn=$('#moreStatsBtn'); const factionStatsBtn=$('#factionStatsBtn');
+    const deleteLogModal=$('#deleteLogModal');
+    const deleteLogBtn=$('#deleteLogBtn');
+    const deleteLogModalClose=$('#deleteLogModalClose');
+    const deleteLogCancelBtn=$('#deleteLogCancelBtn');
+    const deleteLogConfirmBtn=$('#deleteLogConfirmBtn');
+    const deleteLogConfirmInput=$('#deleteLogConfirmInput');
+    const deleteLogMsg=$('#deleteLogMsg');
 
     const getFactionIcon=(name)=>FACTION_ICON_MAP[name]?(FACTION_ICON_BASE+FACTION_ICON_MAP[name]):null;
     const labelWithIconHTML=(label)=>{const url=getFactionIcon(label);return url?`<img class="fac-icon" src="${url}" alt="" title="${label}">${label}`:label};
@@ -740,6 +768,49 @@ Sorry. = )
     // Botões View more
     moreStatsBtn?.addEventListener('click', ()=>{ if(games.length) openWinnersModal(); });
     factionStatsBtn?.addEventListener('click', ()=>{ if(games.length) openFactionsModal(); });
+
+    // Delete Log
+    function openDeleteLogModal(){
+      deleteLogConfirmInput.value='';
+      deleteLogConfirmBtn.disabled=true;
+      deleteLogMsg.textContent='';
+      deleteLogModal.style.display='flex';
+      deleteLogModal.setAttribute('aria-hidden','false');
+      setTimeout(()=>deleteLogConfirmInput.focus(),100);
+    }
+    function closeDeleteLogModal(){
+      deleteLogModal.style.display='none';
+      deleteLogModal.setAttribute('aria-hidden','true');
+    }
+    deleteLogBtn?.addEventListener('click', openDeleteLogModal);
+    deleteLogModalClose?.addEventListener('click', closeDeleteLogModal);
+    deleteLogCancelBtn?.addEventListener('click', closeDeleteLogModal);
+    deleteLogModal?.addEventListener('click',(e)=>{ if(e.target===deleteLogModal) closeDeleteLogModal(); });
+    deleteLogConfirmInput?.addEventListener('input',()=>{
+      const val=(deleteLogConfirmInput.value||'').trim();
+      deleteLogConfirmBtn.disabled = (val !== __slug);
+    });
+    deleteLogConfirmBtn?.addEventListener('click', async ()=>{
+      const val=(deleteLogConfirmInput.value||'').trim();
+      if(val!==__slug){ deleteLogMsg.textContent='Slug does not match.'; return; }
+      deleteLogConfirmBtn.disabled=true;
+      deleteLogMsg.textContent='Deleting...';
+      try{
+        const gameId = await __getGameIdBySlug();
+        const {error:e1}=await supabaseClient.from('events').delete().eq('game_id',gameId).eq('type','ADD_GAME_ENTRY');
+        if(e1) throw e1;
+        const {error:e2}=await supabaseClient.from('game_players').delete().eq('game_id',gameId);
+        if(e2) throw e2;
+        const {error:e3}=await supabaseClient.from('games').delete().eq('id',gameId);
+        if(e3) throw e3;
+        games=[];window.saveGames([]);render();
+        closeDeleteLogModal();
+        alert('Log deleted successfully.');
+      }catch(err){
+        deleteLogMsg.textContent='Error: '+(err.message||'Could not delete log.');
+        deleteLogConfirmBtn.disabled=false;
+      }
+    });
 
     // Fechar modal
     modalClose.addEventListener('click', ()=>{ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalChart.classList.remove('factions'); });
