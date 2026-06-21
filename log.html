@@ -22,12 +22,13 @@
     .title{font-size:clamp(18px,3.3vw,28px);font-weight:700;letter-spacing:.3px}
     .row{display:grid;grid-template-columns:minmax(0, 1.28fr) minmax(0, 1fr);gap:14px}
     @media (max-width:980px){
-      .row{grid-template-columns:1fr !important}
-      form .grid { display: block !important; }
-      form .grid > div { width: 100% !important; margin-bottom: 12px !important; grid-column: auto !important; }
-      form .grid > div:nth-child(3) { display: flex !important; gap: 8px !important; justify-content: flex-start !important; }
-      .player-row { display: flex !important; flex-direction: column !important; gap: 8px !important; border-bottom: 1px solid var(--border) !important; padding-bottom: 16px !important; margin-bottom: 12px !important; }
-      .player-row > * { width: 100% !important; margin: 0 !important; }
+      .row{grid-template-columns:1fr}
+      form .grid { display: flex !important; flex-wrap: wrap !important; gap: 12px !important; }
+      form .grid > div:nth-child(1), 
+      form .grid > div:nth-child(2) { flex: 1 1 45% !important; min-width: 140px !important; }
+      form .grid > div:nth-child(3) { flex: 1 1 100% !important; justify-content: flex-start !important; margin-top: 4px !important; }
+      .player-row { grid-template-columns: 1fr !important; gap: 8px !important; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 8px; }
+      .player-row > * { width: 100% !important; height: 44px; }
     }
 
     .card{background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow: 0 6px 22px rgba(0,0,0,.28)}
@@ -52,6 +53,7 @@
       -webkit-filter: invert(1) brightness(10) !important;
       cursor: pointer !important;
       opacity: 1 !important;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>') !important;
     }
     input:focus, select:focus, textarea:focus{border-color:#334155;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
     .btn{cursor:pointer;transition:.15s ease;display:inline-flex;gap:8px;align-items:center;position:relative}
